@@ -1,0 +1,97 @@
+:root {
+  color-scheme: light dark;
+  --borde: color-mix(in oklab, currentColor 20%, transparent);
+  --tenue: color-mix(in oklab, currentColor 65%, transparent);
+}
+
+body {
+  margin: 0 auto;
+  max-width: 60rem;
+  padding: 2rem 1rem 4rem;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+h1 {
+  margin-bottom: 0.25rem;
+}
+
+.intro,
+.contador,
+.vacio,
+footer {
+  color: var(--tenue);
+}
+
+form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 1.5rem 0 0.5rem;
+}
+
+input[type="search"] {
+  flex: 1 1 18rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.rejilla {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  padding: 0;
+  list-style: none;
+}
+
+.personaje {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+}
+
+.personaje h2 {
+  margin: 0 0 0.15rem;
+  font-size: 1.05rem;
+}
+
+.alias {
+  color: var(--tenue);
+  font-size: 0.85rem;
+}
+
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.etiquetas li {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--tenue);
+}
+
+[hidden] {
+  display: none !important;
+}

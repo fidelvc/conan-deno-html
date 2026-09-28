@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Presentación · Oreimo</title>
+    <link rel="stylesheet" href="/estilos.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>Presentación</h1>
+      <p><a href="/">← Volver al índice</a></p>
+    </header>
+
+    <main>
+      <p>
+        Esta página se pide con <code>/paginas/presentacion</code> y el servidor
+        la saca de <code>pages/presentacion.html</code>. Tú nunca ves el
+        <code>.html</code>, y en la barra de direcciones tampoco: es una
+        reescritura interna, no un redirect.
+      </p>
+
+      <h2>Prueba a romperlo</h2>
+      <p>
+        Sustituye <code>presentacion</code> por <code>..%2F..%2F..%2Fetc%2Fpasswd</code>
+        en la barra de direcciones. Con el candado puesto (tu
+        <code>isSafePathSegment</code>) recibirás un 404. Sin él, en una versión
+        ingenua del servidor habrías conseguido leer un fichero del sistema.
+      </p>
+
+      <p>
+        Y mira también qué pasa con <code>/kirino</code>: esa sí cambia la URL
+        del navegador a <code>/personajes/kirino</code>, porque es un 301 de
+        verdad.
+      </p>
+    </main>
+  </body>
+</html>

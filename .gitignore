@@ -1,0 +1,16 @@
+# Dependencias (no se usan en este proyecto, pero por si se añaden)
+node_modules/
+
+# Salida de deno test --coverage
+coverage/
+
+# Binarios de deno compile
+servidor
+*.exe
+
+# Variables de entorno
+.env
+.env.local
+
+# Sistema
+.DS_Store

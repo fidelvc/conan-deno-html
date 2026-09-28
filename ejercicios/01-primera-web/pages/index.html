@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oreimo · guía de personajes</title>
+    <link rel="stylesheet" href="/estilos.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>Oreimo · guía de personajes</h1>
+      <p class="intro">
+        Esta página la sirve Deno, no hay framework. El HTML de abajo llega al
+        navegador tal cual; el único JavaScript es una mejora progresiva sobre
+        el buscador.
+      </p>
+    </header>
+
+    <main>
+      <!--
+        El formulario usa method="get", así que funciona SIN JavaScript: al
+        enviarlo el navegador recarga "/?q=kirino" y el servidor filtra.
+        app.js intercepta el envío para filtrar sin recargar. Quita el JavaScript
+        y la página sigue sirviendo para buscar.
+      -->
+      <form id="buscador" method="get" action="/" data-query="<!-- query -->">
+        <label for="q">Buscar</label>
+        <input
+          id="q"
+          name="q"
+          type="search"
+          placeholder="Kirino, modelo, idol, gótico..."
+          autocomplete="off"
+        />
+        <button type="submit">Buscar</button>
+      </form>
+
+      <p id="contador" class="contador" role="status" aria-live="polite"></p>
+
+      <ul id="personajes" class="rejilla">
+        <!-- El servidor sustituye este comentario por las tarjetas. -->
+        <!-- cards -->
+      </ul>
+
+      <p id="vacio" class="vacio" hidden>
+        Ningún personaje coincide con esa búsqueda.
+      </p>
+    </main>
+
+    <footer>
+      <p>Subconjunto curado para prácticas. Hecho con Deno.</p>
+    </footer>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

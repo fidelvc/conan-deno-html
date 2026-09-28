@@ -1,0 +1,51 @@
+:root {
+  color-scheme: light dark;
+  --borde: color-mix(in oklab, currentColor 20%, transparent);
+  --tenue: color-mix(in oklab, currentColor 65%, transparent);
+}
+
+body {
+  margin: 0 auto;
+  max-width: 50rem;
+  padding: 2rem 1rem 4rem;
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+nav a,
+header a {
+  color: inherit;
+}
+
+.rejilla {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  padding: 0;
+  list-style: none;
+}
+
+.personaje {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+}
+
+.personaje h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+}
+
+.alias,
+.kana {
+  color: var(--tenue);
+  font-size: 0.9rem;
+}
+
+.ficha h2 {
+  margin-bottom: 0;
+}
+
+.relaciones {
+  padding-left: 1.2rem;
+}
