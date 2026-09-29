@@ -36,9 +36,10 @@ const empty = document.querySelector("#vacio");
  *   - `String.prototype.includes` y `String.prototype.trim`.
  */
 function matchesQuery(card, query) {
-  throw new Error("TODO 1: implementa matchesQuery", {
+  return card.dataset.buscar.includes(query.trim())
+  /*throw new Error("TODO 1: implementa matchesQuery", {
     cause: { searchText: card.dataset.buscar, query },
-  });
+  });*/
 }
 
 /**
