@@ -24,7 +24,8 @@
         app.js intercepta el envío para filtrar sin recargar. Quita el JavaScript
         y la página sigue sirviendo para buscar.
       -->
-      <form id="buscador" method="get" action="/" data-query="<!-- query -->">
+      <form id="search-form" method="get" action="/"
+        data-query="<!-- query -->">
         <label for="q">Buscar</label>
         <input
           id="q"
@@ -36,14 +37,14 @@
         <button type="submit">Buscar</button>
       </form>
 
-      <p id="contador" class="contador" role="status" aria-live="polite"></p>
+      <p id="result-count" class="counter" role="status" aria-live="polite"></p>
 
-      <ul id="personajes" class="rejilla">
+      <ul id="characters" class="grid">
         <!-- El servidor sustituye este comentario por las tarjetas. -->
         <!-- cards -->
       </ul>
 
-      <p id="vacio" class="vacio" hidden>
+      <p id="empty-state" class="empty-state" hidden>
         Ningún personaje coincide con esa búsqueda.
       </p>
     </main>

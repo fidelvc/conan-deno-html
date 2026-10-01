@@ -1,7 +1,7 @@
 :root {
   color-scheme: light dark;
-  --borde: color-mix(in oklab, currentColor 20%, transparent);
-  --tenue: color-mix(in oklab, currentColor 65%, transparent);
+  --border: color-mix(in oklab, currentColor 20%, transparent);
+  --muted: color-mix(in oklab, currentColor 65%, transparent);
 }
 
 body {
@@ -13,7 +13,7 @@ body {
 }
 
 header {
-  border-bottom: 1px solid var(--borde);
+  border-bottom: 1px solid var(--border);
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
 }
@@ -23,7 +23,7 @@ nav a {
   margin-right: 0.4rem;
 }
 
-nav a.activo {
+nav a.active {
   font-weight: 700;
   text-decoration: underline;
 }
@@ -32,31 +32,31 @@ h1 {
   margin-top: 0;
 }
 
-.rejilla {
+.grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
 }
 
-.personaje {
+.character {
   padding: 0.9rem 1rem;
-  border: 1px solid var(--borde);
+  border: 1px solid var(--border);
   border-radius: 0.6rem;
 }
 
-.personaje h2 {
+.character h2 {
   margin: 0 0 0.2rem;
   font-size: 1.05rem;
 }
 
 .alias,
-.grupo {
+.group {
   margin: 0;
-  color: var(--tenue);
+  color: var(--muted);
   font-size: 0.85rem;
 }
 
-.etiquetas {
+.tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
@@ -65,22 +65,22 @@ h1 {
   list-style: none;
 }
 
-.etiquetas li {
+.tags li {
   padding: 0.1rem 0.5rem;
-  border: 1px solid var(--borde);
+  border: 1px solid var(--border);
   border-radius: 999px;
   font-size: 0.78rem;
-  color: var(--tenue);
+  color: var(--muted);
 }
 
-.relaciones {
+.relationships {
   padding-left: 1.2rem;
 }
 
 footer {
   margin-top: 3rem;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--borde);
-  color: var(--tenue);
+  border-top: 1px solid var(--border);
+  color: var(--muted);
   font-size: 0.9rem;
 }

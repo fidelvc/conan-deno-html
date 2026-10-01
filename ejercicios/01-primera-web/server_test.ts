@@ -144,14 +144,14 @@ Deno.test("renderCharacters devuelve cadena vacía para lista vacía", () => {
 
 Deno.test("renderCharacters pinta un <li> por personaje", () => {
   const html = renderCharacters([CHARACTERS[0]]);
-  assertEquals(html.split('class="personaje"').length - 1, 1);
+  assertEquals(html.split('class="character"').length - 1, 1);
 });
 
-Deno.test("renderCharacters incluye el data-buscar de searchText", () => {
+Deno.test("renderCharacters incluye el data-search de searchText", () => {
   const ruri = CHARACTERS.find((c) => c.id === "ruri")!;
   const html = renderCharacters([ruri]);
 
-  assertStringIncludes(html, "data-buscar=");
+  assertStringIncludes(html, "data-search=");
   assertStringIncludes(html, searchText(ruri));
 });
 
@@ -172,8 +172,8 @@ Deno.test("renderCharacters no inventa un alias donde no lo hay", () => {
 Deno.test("renderCharacters pinta una etiqueta por cada tag", () => {
   const kyousuke = CHARACTERS.find((c) => c.id === "kyousuke")!;
   const html = renderCharacters([kyousuke]);
-  const etiquetas = html.split('class="etiquetas"')[1] ?? "";
-  assertEquals(etiquetas.split("<li>").length - 1, kyousuke.tags.length);
+  const tagsHtml = html.split('class="tags"')[1] ?? "";
+  assertEquals(tagsHtml.split("<li>").length - 1, kyousuke.tags.length);
 });
 
 Deno.test("renderCharacters no mete comas entre tarjetas", () => {
@@ -214,7 +214,7 @@ Deno.test("GET / responde 200 con content-type de HTML", async () => {
 Deno.test("GET / devuelve el esqueleto de la página", async () => {
   const body = await (await get("/")).text();
   assertStringIncludes(body, "<!DOCTYPE html>");
-  assertStringIncludes(body, 'id="buscador"');
+  assertStringIncludes(body, 'id="search-form"');
   assertStringIncludes(body, "Oreimo");
 });
 
@@ -270,12 +270,12 @@ Deno.test("injectInto NO interpreta los $ del contenido", () => {
   assertStringIncludes(html, contenido);
 });
 
-Deno.test("renderCharacters escapa el data-buscar", () => {
+Deno.test("renderCharacters escapa el data-search", () => {
   const conDolar = {
     ...CHARACTERS[0],
     name: 'Safinata "$&"',
   };
   const html = renderCharacters([conDolar]);
-  assertEquals(html.includes('data-buscar="Safinata "$&""'), false);
+  assertEquals(html.includes('data-search="Safinata "$&""'), false);
   assertStringIncludes(html, "&amp;");
 });

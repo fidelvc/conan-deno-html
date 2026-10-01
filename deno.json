@@ -5,8 +5,9 @@
     "ej02": "deno run --watch --allow-net --allow-read=ejercicios/02-rutas ejercicios/02-rutas/server.ts",
     "ej03": "deno run --watch --allow-net --allow-read=ejercicios/03-layout ejercicios/03-layout/server.ts",
     "ej05": "deno run --watch --allow-net --allow-read=ejercicios/05-formularios ejercicios/05-formularios/server.ts",
+    "comp": "deno run --watch --allow-net --allow-read=. componentes/server.ts",
     "test": "deno test --allow-read=.",
-    "check": "deno check main.ts main_test.ts datos/personajes.ts ejercicios/01-primera-web/server.ts ejercicios/01-primera-web/server_test.ts ejercicios/02-rutas/rutas.ts ejercicios/02-rutas/server.ts ejercicios/02-rutas/server_test.ts ejercicios/03-layout/layout.ts ejercicios/03-layout/componentes.ts ejercicios/03-layout/server.ts ejercicios/03-layout/server_test.ts ejercicios/04-datos/queries.ts ejercicios/04-datos/queries_test.ts ejercicios/05-formularios/formulario.ts ejercicios/05-formularios/server.ts ejercicios/05-formularios/server_test.ts",
+    "check": "deno check main.ts main_test.ts datos/personajes.ts componentes/server.ts ejercicios/01-primera-web/server.ts ejercicios/01-primera-web/server_test.ts ejercicios/02-rutas/rutas.ts ejercicios/02-rutas/server.ts ejercicios/02-rutas/server_test.ts ejercicios/03-layout/layout.ts ejercicios/03-layout/componentes.ts ejercicios/03-layout/server.ts ejercicios/03-layout/server_test.ts ejercicios/04-datos/queries.ts ejercicios/04-datos/queries_test.ts ejercicios/05-formularios/formulario.ts ejercicios/05-formularios/server.ts ejercicios/05-formularios/server_test.ts",
     "lint": "deno lint",
     "fmt": "deno fmt",
     "fmt:check": "deno fmt --check"

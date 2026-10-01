@@ -1,0 +1,24 @@
+/*
+ * estilos-globales.css · 07 shadow dom
+ * ===================================
+ *
+ * La hoja de estilos de la página, a propósito. Su trabajo en este bloque es
+ * **no** tener efecto sobre los componentes.
+ *
+ * Prueba a quitar el bloque `.character { ... }` de aquí y mira las tarjetas:
+ * no cambian. Los estilos de la tarjeta están dentro de su shadow root, y un
+ * shadow root es una frontera de estilos, no una convención.
+ *
+ * Y prueba lo contrario: añade `character-card { color: red }` a
+ * `assets/estilos.css`. Tampoco hace nada. Esa es la otra mitad del trato, y
+ * es la que sorprende: en el 06, un `.character { color: red }` global
+ * rompía las 17 tarjetas.
+ */
+
+.character {
+  color: red;
+}
+
+character-list {
+  display: block;
+}

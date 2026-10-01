@@ -61,14 +61,14 @@ Deno.test("nav separa los enlaces con un punto medio", () => {
 
 Deno.test("nav marca la sección activa y solo esa", () => {
   const html = nav("/grupos");
-  assertEquals(html.split('class="activo"').length - 1, 1);
+  assertEquals(html.split('class="active"').length - 1, 1);
   // La activa es la de /grupos, no la primera.
-  const activo = html.slice(html.indexOf('class="activo"'));
-  assertStringIncludes(activo.slice(0, 200), "Grupos");
+  const activeHtml = html.slice(html.indexOf('class="active"'));
+  assertStringIncludes(activeHtml.slice(0, 200), "Grupos");
 });
 
 Deno.test("nav sin sección activa no marca ninguna", () => {
-  assertEquals(nav().includes('class="activo"'), false);
+  assertEquals(nav().includes('class="active"'), false);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ Deno.test("layout enlaza el CSS", () => {
 Deno.test("layout mete la navegación con la sección activa", () => {
   const html = layout({ title: "x", content: "", active: "/" });
   assertStringIncludes(html, "<nav>");
-  assertStringIncludes(html, 'class="activo"');
+  assertStringIncludes(html, 'class="active"');
 });
 
 Deno.test("layout escapa el título", () => {
@@ -128,16 +128,16 @@ Deno.test("tagList respeta el orden del array", () => {
   assertEquals(html.indexOf("<li>b</li>") < html.indexOf("<li>c</li>"), true);
 });
 
-Deno.test('tagList envuelve en un <ul class="etiquetas">', () => {
+Deno.test('tagList envuelve en un <ul class="tags">', () => {
   const html = tagList(["modelo"]);
-  assertStringIncludes(html, '<ul class="etiquetas">');
+  assertStringIncludes(html, '<ul class="tags">');
   assertStringIncludes(html, "</ul>");
 });
 
 Deno.test("tagList con array vacío no rompe nada", () => {
   const html = tagList([]);
   assertEquals(html.includes("undefined"), false);
-  assertEquals(html.includes('class="etiquetas"'), true);
+  assertEquals(html.includes('class="tags"'), true);
 });
 
 Deno.test("tagList escapa el contenido de cada etiqueta", () => {
@@ -210,9 +210,9 @@ Deno.test("relationshipList sin relaciones no rompe nada", () => {
 // characterCard
 // ─────────────────────────────────────────────────────────────────────────────
 
-Deno.test('characterCard es un <article class="personaje">', () => {
+Deno.test('characterCard es un <article class="character">', () => {
   const html = characterCard(kirino());
-  assertStringIncludes(html, '<article class="personaje">');
+  assertStringIncludes(html, '<article class="character">');
   assertStringIncludes(html, "</article>");
 });
 
@@ -246,7 +246,7 @@ Deno.test("characterCard incluye el resumen", () => {
 
 Deno.test("characterCard delega en tagList", () => {
   const html = characterCard(kirino());
-  assertStringIncludes(html, '<ul class="etiquetas">');
+  assertStringIncludes(html, '<ul class="tags">');
   assertEquals(
     html.split("<li>").length - 1,
     kirino().tags.length,
@@ -293,13 +293,13 @@ Deno.test("characterCard nunca escribe la palabra undefined", () => {
 
 Deno.test("characterGrid pinta una tarjeta por personaje", () => {
   const html = characterGrid([kirino(), findCharacter("ruri")!]);
-  assertEquals(html.split('<article class="personaje">').length - 1, 2);
+  assertEquals(html.split('<article class="character">').length - 1, 2);
 });
 
 Deno.test("characterGrid con lista vacía no rompe nada", () => {
   const html = characterGrid([]);
   assertEquals(html.includes("undefined"), false);
-  assertStringIncludes(html, 'class="rejilla"');
+  assertStringIncludes(html, 'class="grid"');
 });
 
 Deno.test("groupCounts suma todos los personajes", () => {

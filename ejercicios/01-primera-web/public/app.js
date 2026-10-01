@@ -16,30 +16,30 @@
  * del navegador.
  */
 
-const form = document.querySelector("#buscador");
+const form = document.querySelector("#search-form");
 const input = document.querySelector("#q");
-const cards = [...document.querySelectorAll("[data-buscar]")];
-const counter = document.querySelector("#contador");
-const empty = document.querySelector("#vacio");
+const cards = [...document.querySelectorAll("[data-search]")];
+const counter = document.querySelector("#result-count");
+const empty = document.querySelector("#empty-state");
 
 /**
  * TODO 1 · ¿Esta tarjeta coincide con lo que el usuario ha escrito?
  *
- * @param {Element} card Una tarjeta (`<li class="personaje">`).
+ * @param {Element} card Una tarjeta (`<li class="character">`).
  * @param {string} query Texto buscado, ya en minúsculas.
  * @returns {boolean} `true` si hay que dejarla a la vista.
  *
  * Pistas:
- *   - `card.dataset.buscar` ya viene en minúsculas (lo dejó el servidor al
+ *   - `card.dataset.search` ya viene en minúsculas (lo dejó el servidor al
  *     construir el atributo). Tú no tienes que normalizar nada.
  *   - Con la búsqueda vacía, todo tiene que estar visible.
  *   - `String.prototype.includes` y `String.prototype.trim`.
  */
 function matchesQuery(card, query) {
-  return card.dataset.buscar.includes(query.trim())
-  /*throw new Error("TODO 1: implementa matchesQuery", {
-    cause: { searchText: card.dataset.buscar, query },
-  });*/
+ 
+  throw new Error("TODO 1: implementa matchesQuery", {
+    cause: { searchText: card.dataset.search, query },
+  });
 }
 
 /**
@@ -47,7 +47,7 @@ function matchesQuery(card, query) {
  *
  * @param {number} visible Cuántas tarjetas han quedado a la vista.
  * @param {number} total Cuántas hay en total.
- * @returns {string} El texto, ya listo para meter en `#contador`.
+ * @returns {string} El texto, ya listo para meter en `#result-count`.
  *
  * Pistas:
  *   - `Array.prototype.filter` + `.length` te da el número de visibles sin

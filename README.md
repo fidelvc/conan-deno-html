@@ -1,10 +1,13 @@
 # deno-con-html · Serie de ejercicios
 
-Cinco ejercicios para aprender Deno, HTML y los métodos de JavaScript usando
-como dominio un dataset de personajes de _Oreimo_. Cada bloque parte de un
-código que ya funciona y te pone un `TODO` encima. Los tests te dicen qué se
-espera, así que no hace falta que te sepas el tema de memoria: te lo enseñan
-fallando.
+Dos series para aprender Deno, HTML, JavaScript y Web Components usando como
+dominio un dataset de personajes de _Oreimo_. Cada bloque parte de un código que
+ya funciona y te pone un `TODO` encima. Los tests te dicen qué se espera, así
+que no hace falta que te sepas el tema de memoria: te lo enseñan fallando.
+
+- **`ejercicios/`** · cinco bloques de Deno, rutas, arrays y formularios.
+- **`componentes/`** · ocho bloques de cómo se reorganiza el código cuando la
+  app crece: clases, `<template>`, `<slot>`, eventos, `patch` y Shadow DOM.
 
 Todo lo que hay aquí está pensado para abrirse, leerlo y romperlo. No hay build,
 ni `node_modules`, ni framework.
@@ -26,6 +29,7 @@ Hay dos cosas que vas a hacer todo el rato:
 
 ```sh
 deno task ejXX     # levantar el servidor del bloque XX en http://localhost:8000
+deno task comp     # levantar el servidor de la segunda serie en http://localhost:8000
 deno task test     # correr todos los tests (van a fallar: eso es el ejercicio)
 ```
 
@@ -57,10 +61,26 @@ ejercicios/
   03-layout/                 Layout y componentes sin plantillas
   04-datos/                  Métodos de array: filter, map, reduce, sort
   05-formularios/            POST, validación y el patrón PRG
+componentes/                 La segunda serie: de funciones sueltas a Web Components
+  01-baseline/               Todo procedural, con innerHTML
+  02-clases/                 El estado dentro de una clase
+  03-templates/              <template> y el primer Custom Element
+  04-slots/                  Composición con <slot>
+  05-modificar/              Cambiar el estado: CustomEvent
+  06-actualizar/             Añadir, editar y borrar con patch
+  07-shadow-dom/             Encapsular estilos con attachShadow
+  08-integracion/            Todo junto, con filtros dentro del componente
+CONVENCIONES.md              La regla de idioma: código en inglés, contenido en español
+GUIA-REFACTOR.md             El recorrido de la segunda serie, bloque a bloque
 ```
 
 Cada bloque es autónomo: repite su propia `escapeHtml` en vez de importarla de
 otro bloque, para que puedas abrir el 04 sin haber hecho el 03.
+
+La segunda serie rompe esa regla a propósito, y en un solo sitio: el bloque 07
+importa el `store` del 06 y el 08 importa la tarjeta del 07. La razón es que en
+esa serie lo que se demuestra es justo que un componente **no** cambia cuando le
+añades requisitos, y para verlo tiene que ser literalmente el mismo fichero.
 
 ## Los bloques
 
@@ -201,6 +221,47 @@ Dos errores que verás caer si los haces:
 Y el recordatorio de siempre: el `nombre` que escribe el usuario vuelve a la
 página en el `value` y en el listado. Sin `escapeHtml`, eso es XSS. Hay tests
 que mandan `<script>alert(1)</script>` y comprueban que sale como texto.
+
+## La segunda serie · `componentes/`
+
+```sh
+deno task comp    # http://localhost:8000
+```
+
+La primera serie te enseña Deno, HTML y los métodos de array. Esta te enseña
+**cómo se reorganiza el código cuando la app crece**, con el mismo dataset y sin
+tocar nada de la otra serie.
+
+| #  | Bloque           | El problema del anterior                            | La herramienta                      |
+| -- | ---------------- | --------------------------------------------------- | ----------------------------------- |
+| 01 | `01-baseline`    | —                                                   | Procedural, con `innerHTML`         |
+| 02 | `02-clases`      | El estado reparte entre variables sueltas           | Una clase que lo contiene todo      |
+| 03 | `03-templates`   | El HTML son cadenas con `map` y `join`              | `<template>` + un Custom Element    |
+| 04 | `04-slots`       | La tarjeta no se puede reutilizar en otro sitio     | `<slot>` y un componente hijo       |
+| 05 | `05-modificar`   | Al marcar un favorito, HTML y estado se contradicen | `CustomEvent` que sube              |
+| 06 | `06-actualizar`  | Añadir, editar y borrar son tres bloques de código  | `patch`: solo lo que cambia         |
+| 07 | `07-shadow-dom`  | Los estilos de un componente se rompen fuera        | `attachShadow` y encapsulación real |
+| 08 | `08-integracion` | —                                                   | Todo junto, con filtros internos    |
+
+Tres fases, y cada una tiene su pregunta:
+
+- **Mostrar datos** (01 a 04): _qué_ pintas, desde cadenas hasta `<template>` y
+  `<slot>`.
+- **Modificar** (05 y 06): _cómo_ cambia el estado y _quién_ se entera.
+- **Actualizar** (06 y 07): _qué_ pasa cuando la colección cambia entera, y qué
+  precio tiene encerrar un componente.
+
+Cada bloque tiene un `README.md` con sus TODOs, sus tests y su lista de
+verificación manual. Los bloques 02, 05, 06 y 08 llevan tests de verdad, porque
+su lógica del store es pura y se testea en Deno sin navegador. Los demás se
+verifican mirando la página, y el README de cada uno lo dice.
+
+El recorrido completo, con el porqué de cada paso, está en
+**`GUIA-REFACTOR.md`**.
+
+Y hay una cosa que conviene decir antes de empezar: **esta serie no está para
+terminarse**. Se termina cuando puedas explicar por qué el bloque 07 tiene más
+código que el 03 y sin embargo hace menos.
 
 ## Sobre el dataset
 

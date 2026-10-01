@@ -101,28 +101,28 @@ Deno.test("isSafePathSegment rechaza todo lo que no sea alphanumerico", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 Deno.test("resolveRoute resuelve las rutas fijas de la tabla", () => {
-  assertEquals(resolveRoute("/"), { kind: "indice" });
-  assertEquals(resolveRoute("/personajes"), { kind: "indice" });
+  assertEquals(resolveRoute("/"), { kind: "index" });
+  assertEquals(resolveRoute("/personajes"), { kind: "index" });
   assertEquals(resolveRoute("/paginas/presentacion"), {
-    kind: "pagina",
+    kind: "page",
     template: "presentacion.html",
   });
 });
 
 Deno.test("resolveRoute devuelve el redirect de los atajos", () => {
   assertEquals(resolveRoute("/kirino"), {
-    kind: "redireccion",
+    kind: "redirect",
     to: "/personajes/kirino",
   });
   assertEquals(resolveRoute("/kuroneko"), {
-    kind: "redireccion",
+    kind: "redirect",
     to: "/personajes/ruri",
   });
 });
 
 Deno.test("resolveRoute reconoce el patrón /personajes/<id>", () => {
   assertEquals(resolveRoute("/personajes/kirino"), {
-    kind: "personaje",
+    kind: "character",
     id: "kirino",
   });
 });
@@ -135,7 +135,7 @@ Deno.test("resolveRoute devuelve null si el id no existe en el dataset", () => {
 
 Deno.test("resolveRoute devuelve null ante rutas desconocidas", () => {
   assertEquals(resolveRoute("/no-existe"), null);
-  assertEquals(resolveRoute("/personajes"), { kind: "indice" });
+  assertEquals(resolveRoute("/personajes"), { kind: "index" });
   assertEquals(resolveRoute("/paginas"), null);
 });
 

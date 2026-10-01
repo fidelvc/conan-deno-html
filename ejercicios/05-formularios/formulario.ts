@@ -9,11 +9,11 @@
  *
  * Tus cinco tareas
  * ----------------
- *   1. `leerCampos`    → sacar los tres campos del `FormData`, sin `undefined`
- *   2. `validar`       → reglas de validación y mensajes de error
- *   3. `slug`          → "Sena Akagi" → "sena-akagi"
- *   4. `renderAlta`    → el formulario, con errores y con lo que ya escribiste
- *   5. `crearRedirect` → un 303 bien construido, que es el corazón del PRG
+ *   1. `readFields`       → sacar los tres campos del `FormData`, sin `undefined`
+ *   2. `validate`         → reglas de validación y mensajes de error
+ *   3. `slug`             → "Sena Akagi" → "sena-akagi"
+ *   4. `renderDraftForm`  → el formulario, con errores y con lo que ya escribiste
+ *   5. `createRedirect`   → un 303 bien construido, que es el corazón del PRG
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * POR QUÉ IMPORTA EL PATRÓN PRG
@@ -48,39 +48,39 @@ import { GROUPS } from "../../datos/personajes.ts";
 import type { GroupId } from "../../datos/personajes.ts";
 
 /** Lo que el usuario quiere dar de alta. Siempre los tres campos, siempre texto. */
-export interface Alta {
-  nombre: string;
-  grupo: string;
-  descripcion: string;
+export interface Draft {
+  name: string;
+  group: string;
+  description: string;
 }
 
 /**
  * Clave de campo → mensaje. Solo aparecen los campos que fallan.
  *
  * OJO al `Partial`: las claves son OPCIONALES a propósito, porque el contrato
- * de `validar` es "si no hay errores, devuelve `{}`", y un `{}` vacío no es
+ * de `validate` es "si no hay errores, devuelve `{}`", y un `{}` vacío no es
  * asignable a un `Record<..., string>` de tres claves obligatorias. Con
  * `Partial` el tipo cuenta la historia: puede faltar cualquiera.
  */
-export type Errores = Partial<
-  Record<"nombre" | "grupo" | "descripcion", string>
+export type Errors = Partial<
+  Record<"name" | "group" | "description", string>
 >;
 
 /** Un alta es válida, o no lo es y dice por qué. */
-export type Resultado =
-  | { ok: true; alta: Alta }
-  | { ok: false; errores: Errores };
+export type ValidationResult =
+  | { ok: true; draft: Draft }
+  | { ok: false; errors: Errors };
 
 /** El formulario recién abierto: todo vacío. */
-export const ALTA_VACIA: Alta = { nombre: "", grupo: "", descripcion: "" };
+export const EMPTY_DRAFT: Draft = { name: "", group: "", description: "" };
 
 /** Sin errores de validación. Es un objeto VACÍO, no un array de mensajes. */
-export const SIN_ERRORES: Errores = {};
+export const NO_ERRORS: Errors = {};
 
 /** Máximo de caracteres de cada campo. Se usan en el HTML y en la validación. */
-export const LIMITES = {
-  nombre: { min: 2, max: 40 },
-  descripcion: { max: 200 },
+export const LIMITS = {
+  name: { min: 2, max: 40 },
+  description: { max: 200 },
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -90,13 +90,13 @@ export const LIMITES = {
 /**
  * TODO 1 · Saca los tres campos del `FormData`.
  *
- * @returns Un `Alta` con los TRES campos presentes. Aunque no venga nada, el
- *          resultado tiene `nombre`, `grupo` y `descripcion` como `string`.
+ * @returns Un `Draft` con los TRES campos presentes. Aunque no venga nada, el
+ *          resultado tiene `name`, `group` y `description` como `string`.
  *
  * Por qué importa tanto: `FormData.get()` devuelve `FormDataEntryValue | null`,
  * y ese tipo incluye `File`. No es un capricho del tipado: un formulario con
  * `<input type="file">` mete un `File` de verdad. Si haces
- * `const nombre = data.get("nombre")` y el visitante no ha rellenado el campo,
+ * `const name = data.get("name")` y el visitante no ha rellenado el campo,
  * tienes `null` en una variable que el resto del programa da por `string`, y el
  * fallo sale tres funciones más abajo, en un `toLowerCase` que no tiene nada
  * que ver.
@@ -104,17 +104,17 @@ export const LIMITES = {
  * Pistas:
  *   - Un helper que convierte cualquier entrada en texto:
  *
- *         function textoCampo(valor: FormDataEntryValue | null): string {
- *           return typeof valor === "string" ? valor.trim() : "";
+ *         function fieldText(value: FormDataEntryValue | null): string {
+ *           return typeof value === "string" ? value.trim() : "";
  *         }
  *
- *     El `.trim()` aquí ya te ahorra el-recordatorio de hacerlo tres veces.
- *   - `FormData` se lee con `.get("nombre")`, por el `name` del input.
- *   - Si el campo no viene, `textoCampo` devuelve `""` y no hay que comprobar
+ *     El `.trim()` aquí ya te ahorra el recordatorio de hacerlo tres veces.
+ *   - `FormData` se lee con `.get("name")`, por el `name` del input.
+ *   - Si el campo no viene, `fieldText` devuelve `""` y no hay que comprobar
  *     nada más.
  */
-export function leerCampos(data: FormData): Alta {
-  throw new Error("TODO 1: implementa leerCampos", { cause: [...data.keys()] });
+export function readFields(data: FormData): Draft {
+  throw new Error("TODO 1: implementa readFields", { cause: [...data.keys()] });
 }
 
 /**
@@ -126,31 +126,31 @@ export function leerCampos(data: FormData): Alta {
  *          los errores de uno en uno.
  *
  * Reglas, en este orden de importancia:
- *   - `nombre`: obligatorio. Entre 2 y 40 caracteres ya sin contar espacios
- *     (por eso `leerCampos` hace `trim`).
- *   - `grupo`: obligatorio, y tiene que ser una clave que exista en `GROUPS`.
+ *   - `name`: obligatorio. Entre 2 y 40 caracteres ya sin contar espacios
+ *     (por eso `readFields` hace `trim`).
+ *   - `group`: obligatorio, y tiene que ser una clave que exista en `GROUPS`.
  *     Ojo: el `value` de un `<select>` es un `string` cualquiera que puede
  *     venir manipulado, así que hay que comprobarlo contra `GROUPS` y no
- *     fiarse. No hagas solo `if (alta.grupo)`, que también pasa con "banana".
- *   - `descripcion`: opcional, pero como mucho 200 caracteres.
+ *     fiarse. No hagas solo `if (draft.group)`, que también pasa con "banana".
+ *   - `description`: opcional, pero como mucho 200 caracteres.
  *
  * Pistas:
- *   - Empieza por `const errores: Errores = {};` y ve rellenando. Devolver
- *     `errores` tal cual es lo correcto: `{}` es exactamente "sin errores",
- *     y por eso las claves de `Errores` son opcionales.
- *   - El error se detecta con `Object.keys(errores).length > 0`. Con
- *     `if (errores)` NO funciona: `{}` es un objeto que siempre es truthy.
- *   - Longitud: `alta.nombre.length`. Con el `trim` ya hecho, no te preocupes
+ *   - Empieza por `const errors: Errors = {};` y ve rellenando. Devolver
+ *     `errors` tal cual es lo correcto: `{}` es exactamente "sin errores",
+ *     y por eso las claves de `Errors` son opcionales.
+ *   - El error se detecta con `Object.keys(errors).length > 0`. Con
+ *     `if (errors)` NO funciona: `{}` es un objeto que siempre es truthy.
+ *   - Longitud: `draft.name.length`. Con el `trim` ya hecho, no te preocupes
  *     de contar espacios.
- *   - ¿Existe la clave? `Object.hasOwn(GROUPS, alta.grupo)`. Con `GROUPS` siendo
- *     un `as const`, `Object.hasOwn` es la forma que el tipado acepta sin
- *     fightar. (Comprobar `GROUPS[alta.grupo]` a pelo también vale, pero
+ *   - ¿Existe la clave? `Object.hasOwn(GROUPS, draft.group)`. Con `GROUPS`
+ *     siendo un `as const`, `Object.hasOwn` es la forma que el tipado acepta
+ *     sin fightar. (Comprobar `GROUPS[draft.group]` a pelo también vale, pero
  *     TypeScript se queja de indexar con un `string`.)
  *   - Los mensajes van en español y son concretos: "Pon un nombre de al menos
  *     2 caracteres", no "campo inválido". El mensaje es parte de la UX.
  */
-export function validar(alta: Alta): Errores {
-  throw new Error("TODO 2: implementa validar", { cause: alta });
+export function validate(draft: Draft): Errors {
+  throw new Error("TODO 2: implementa validate", { cause: draft });
 }
 
 /**
@@ -177,26 +177,26 @@ export function validar(alta: Alta): Errores {
  * entre medias, así que sale "d-k" y no "d--k". El `+` del regex es lo que lo
  * arregla. Hay un test justo para eso.
  */
-export function slug(nombre: string): string {
-  throw new Error("TODO 3: implementa slug", { cause: nombre });
+export function slug(name: string): string {
+  throw new Error("TODO 3: implementa slug", { cause: name });
 }
 
 /**
  * TODO 4 · Pinta el formulario de alta.
  *
- * @param valores Lo que el usuario había escrito. En el GET inicial es
- *                `ALTA_VACIA`; tras un POST con errores, son sus valores. Esto
+ * @param values Lo que el usuario había escrito. En el GET inicial es
+ *                `EMPTY_DRAFT`; tras un POST con errores, son sus valores. Esto
  *                se llama "sticky form" y evita que tenga que reescribirlo
  *                todo por un error de validación.
- * @param errores Los mensajes de `validar`, o `{}` si no hay.
- * @param status  "nuevo" en el GET inicial, "error" cuando se reenvía tras
- *                un POST fallido. Sirve para poner un aviso arriba.
+ * @param errors Los mensajes de `validate`, o `{}` si no hay.
+ * @param status "new" en el GET inicial, "error" cuando se reenvía tras
+ *               un POST fallido. Sirve para poner un aviso arriba.
  *
  * Reglas de seguridad, y aquí sí son de las que importan de verdad:
- *   - NADA de lo que venga en `valores` se pinta sin pasar por `escapeHtml`.
- *     Un `nombre` con `<script>` dentro tiene que aparecer como texto, no
+ *   - NADA de lo que venga en `values` se pinta sin pasar por `escapeHtml`.
+ *     Un `name` con `<script>` dentro tiene que aparecer como texto, no
  *     ejecutarse. Hay un test que lo comprueba.
- *   - `<option selected>` solo en el grupo que eligió, y solo si existe.
+ *   - `<option selected>` solo en el group que eligió, y solo si existe.
  *   - El atributo `value` va entre comillas dobles y con el texto escapado.
  *
  * Pistas:
@@ -204,19 +204,19 @@ export function slug(nombre: string): string {
  *     Ojo: el `&` va PRIMERO. Si escapas `<` antes que `&`, el `&lt;` que acabas
  *     de escribir se vuelve a escapar y sale `&amp;lt;` en pantalla.
  *   - Un `<select>` se recorre con `Object.entries(GROUPS)`, que da
- *     `[id, nombreLargo]` en el orden del objeto, que es el orden que quieres
+ *     `[id, longLabel]` en el orden del objeto, que es el orden que quieres
  *     en el desplegable.
  *   - La plantilla es larga. Concatena con `+` o con plantillas, pero ten el
  *     cuidado de que el HTML quede bien formado: si te falta un `</label>`,
  *     los tests no se van a enterar, pero el navegador sí.
  */
-export function renderAlta(
-  valores: Alta,
-  errores: Errores,
-  status: "nuevo" | "error" = "nuevo",
+export function renderDraftForm(
+  values: Draft,
+  errors: Errors,
+  status: "new" | "error" = "new",
 ): string {
-  throw new Error("TODO 4: implementa renderAlta", {
-    cause: { valores, errores, status },
+  throw new Error("TODO 4: implementa renderDraftForm", {
+    cause: { values, errors, status },
   });
 }
 
@@ -224,10 +224,10 @@ export function renderAlta(
  * TODO 5 · Construye la respuesta del PRG.
  *
  * @returns Un `Response` con estado 303 y la cabecera `Location` apuntando a
- *          `destino`. SIN cuerpo, o con un cuerpo vacío.
+ *          `target`. SIN cuerpo, o con un cuerpo vacío.
  *
  * ⚠️ LA TRAMPA DE ESTE EJERCICIO
- * Lo lógico sería `Response.redirect(destino, 303)`. NO FUNCIONA con rutas
+ * Lo lógico sería `Response.redirect(target, 303)`. NO FUNCIONA con rutas
  * relativas: `Response.redirect("/personajes/sena-akagi")` lanza
  * `TypeError: Invalid URL`, porque `Response.redirect` exige una URL ABSOLUTA
  * (con esquema y host). Es una de las cosas que más gente se tropieza con
@@ -236,13 +236,13 @@ export function renderAlta(
  * Hay dos salidas, y las dos son correctas:
  *   1. Construir el `Response` a mano, como pide este ejercicio:
  *
- *          new Response(null, { status: 303, headers: { location: destino } })
+ *          new Response(null, { status: 303, headers: { location: target } })
  *
  *      La cabecera se escribe `location` en minúsculas. `Headers` normaliza
  *      los nombres a minúsculas al construirse, así que `Location` también
  *      valdría, pero en un `HeadersInit` de tipo `Record<string, string>`
- *      minuscula es lo que sale en todos los ejemplos de la documentación.
- *   2. `Response.redirect(new URL(destino, "http://localhost"), 303)`, que sí
+ *      minúscula es lo que sale en todos los ejemplos de la documentación.
+ *   2. `Response.redirect(new URL(target, "http://localhost"), 303)`, que sí
  *      funciona porque ya es absoluta. Se usa cuando el servidor de verdad
  *      conoce su propio host.
  *
@@ -254,8 +254,8 @@ export function renderAlta(
  *   - Devuelve un `Response`, no un string y no un status: el test comprueba
  *     las cabeceras.
  */
-export function crearRedirect(destino: string): Response {
-  throw new Error("TODO 5: implementa crearRedirect", { cause: destino });
+export function createRedirect(target: string): Response {
+  throw new Error("TODO 5: implementa createRedirect", { cause: target });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -284,8 +284,8 @@ export function escapeHtml(value: string): string {
 }
 
 /** Une los tres mensajes de error en una lista para el aviso. */
-export function listaErrores(errores: Errores): string[] {
-  return Object.values(errores).filter((mensaje) => mensaje.length > 0);
+export function errorList(errors: Errors): string[] {
+  return Object.values(errors).filter((message) => message.length > 0);
 }
 
 export { GROUPS };

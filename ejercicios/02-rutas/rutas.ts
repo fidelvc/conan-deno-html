@@ -55,10 +55,10 @@ import { CHARACTERS } from "../../datos/personajes.ts";
 
 /** Lo que hay que hacer con una petición. Nada de Deno dentro de este tipo. */
 export type Route =
-  | { kind: "indice" }
-  | { kind: "personaje"; id: string }
-  | { kind: "pagina"; template: string }
-  | { kind: "redireccion"; to: string };
+  | { kind: "index" }
+  | { kind: "character"; id: string }
+  | { kind: "page"; template: string }
+  | { kind: "redirect"; to: string };
 
 /**
  * Rutas fijas. El servidor las conoce todas; no adivina.
@@ -68,18 +68,18 @@ export type Route =
  * `../../../etc/passwd`, nunca llega a formar parte de un `template`.
  */
 export const ROUTES: Record<string, Route> = {
-  "/": { kind: "indice" },
-  "/personajes": { kind: "indice" },
-  "/paginas/presentacion": { kind: "pagina", template: "presentacion.html" },
+  "/": { kind: "index" },
+  "/personajes": { kind: "index" },
+  "/paginas/presentacion": { kind: "page", template: "presentacion.html" },
 
   // (c) El único caso de redirect real de esta app. Canónico: la ficha de un
   // personaje vive en /personajes/<id>, y /kirino es solo un atajo.
-  "/kirino": { kind: "redireccion", to: "/personajes/kirino" },
-  "/kuroneko": { kind: "redireccion", to: "/personajes/ruri" },
+  "/kirino": { kind: "redirect", to: "/personajes/kirino" },
+  "/kuroneko": { kind: "redirect", to: "/personajes/ruri" },
 };
 
 /** El patrón dinámico de las fichas: `/personajes/<id>`. */
-export const PERSONAJE_PATTERN = /^\/personajes\/([^/]+)$/;
+export const CHARACTER_PATTERN = /^\/personajes\/([^/]+)$/;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tus tareas empiezan aquí
@@ -139,7 +139,7 @@ export function isSafePathSegment(segment: string): boolean {
  *   1. ¿Está tal cual en `ROUTES`? Entonces devuélvela. Esto cubre `/`,
  *      `/paginas/presentacion` y los atajos que son redirect.
  *   2. ¿Casa con el patrón `/personajes/<algo>`? Entonces devuelve
- *      `{ kind: "personaje", id: <algo> }`, pero SOLO si `<algo>` es el `id` de
+ *      `{ kind: "character", id: <algo> }`, pero SOLO si `<algo>` es el `id` de
  *      un personaje que exista en el dataset. Si no existe, `null`.
  *   3. Cualquier otra cosa: `null`.
  *
@@ -148,13 +148,13 @@ export function isSafePathSegment(segment: string): boolean {
  *     entonces nunca colisionan con `constructor` ni `toString`. Aun así, la
  *     costumbre sana es `Object.hasOwn(ROUTES, pathname)`, y un día te hará
  *     falta cuando la tabla deje de llevar prefijo.
- *   - `pathname.match(PERSONAJE_PATTERN)` te da el `id` en el grupo 1.
+ *   - `pathname.match(CHARACTER_PATTERN)` te da el `id` en el grupo 1.
  *   - `CHARACTERS.some((c) => c.id === id)` para comprobar que existe.
  *   - `null` es un valor de retorno del todo válido en TypeScript: úsalo sin
  *     miedo en vez de inventar un `routeNotFound`.
  */
 export function resolveRoute(pathname: string): Route | null {
   throw new Error("TODO 2: implementa resolveRoute", {
-    cause: { pathname, personajesConocidos: CHARACTERS.length },
+    cause: { pathname, knownCharacters: CHARACTERS.length },
   });
 }

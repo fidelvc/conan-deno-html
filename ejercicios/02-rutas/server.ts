@@ -99,7 +99,7 @@ function renderCharacterList(): string {
           escapeHtml(character.alias)
         }</p>`
         : "";
-      return `<li class="personaje">
+      return `<li class="character">
         <h2><a href="/personajes/${escapeHtml(character.id)}">${
         escapeHtml(character.name)
       }</a></h2>
@@ -124,7 +124,7 @@ function renderCharacterDetail(character: Character): string {
 <h3>Arco</h3>
 <p>${escapeHtml(character.arc)}</p>
 <h3>Relaciones</h3>
-<ul class="relaciones">${relations}</ul>`;
+<ul class="relationships">${relations}</ul>`;
 }
 
 /** Lee una plantilla de `pages/` y sustituye sus marcadores. */
@@ -155,15 +155,15 @@ export async function handler(req: Request): Promise<Response> {
   if (route === null) return notFound();
 
   switch (route.kind) {
-    case "redireccion":
+    case "redirect":
       // El único redirect real de la app. Detrás no hay ningún fichero: solo
       // se le dice al navegador a dónde ir.
       return redirect(route.to, 301);
 
-    case "indice":
+    case "index":
       return await servePage("indice.html", { cards: renderCharacterList() });
 
-    case "personaje": {
+    case "character": {
       const character = findCharacter(route.id);
       if (character === undefined) return notFound();
       return await servePage("personaje.html", {
@@ -171,7 +171,7 @@ export async function handler(req: Request): Promise<Response> {
       });
     }
 
-    case "pagina": {
+    case "page": {
       // El `template` viene de la tabla de rutas, así que ya es de fiar. Pero
       // la segunda comprobación es gratis, y una defensa gratuita no se
       // desperdicia: si algún día alguien mete una ruta con `..` en la tabla,

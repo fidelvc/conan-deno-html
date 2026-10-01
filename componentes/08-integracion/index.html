@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>08 · Integración</title>
+    <link rel="stylesheet" href="/assets/estilos.css" />
+  </head>
+  <body>
+    <h1>08 · Integración</h1>
+    <p class="ayuda">
+      Todo junto, y un componente más: los filtros por grupo y por universo
+      viven dentro de la lista y ya no son un `<select>` en la página. Es el
+      bloque donde se ve para qué sirve el trabajo de los siete anteriores.
+    </p>
+
+    <form id="search-form">
+      <label for="query">Buscar</label>
+      <input id="query" name="query" type="search" autocomplete="off" />
+    </form>
+
+    <p id="result-count" class="ayuda"></p>
+    <p class="ayuda">Favoritos: <span id="favorite-count">0</span></p>
+
+    <form id="add-form">
+      <label for="new-name">Añadir personaje</label>
+      <input id="new-name" name="name" type="text" autocomplete="off" />
+      <button type="submit">Añadir</button>
+      <button type="button" id="reset">Vaciar los añadidos</button>
+    </form>
+
+    <character-list id="characters" groups='["familia-kosaka"]'></character-list>
+
+    <h2>TODOs</h2>
+    <ol>
+      <li class="tarea" id="todo-1">
+        <strong>character-list.js · <code>groupFilterChanged</code></strong>
+        <span>
+          Los botones de grupo viven en el shadow root de la lista y lanzan un
+          <code>CustomEvent</code> con el grupo. Como el <code>&lt;select&gt;</code>
+          del 06 estaba en la página, aquí no hay a quién preguntar.
+        </span>
+      </li>
+      <li class="tarea" id="todo-2">
+        <strong>store.js · <code>setGroupFilter</code></strong>
+        <span>
+          Un filtro más, pero **dentro** de la clase. Compara con
+          <code>#visible</code> del bloque 02: ahí era una variable más, y
+          cualquier nuevo criterio obligaba a tocar <code>setQuery</code>.
+        </span>
+      </li>
+      <li class="tarea" id="todo-3">
+        <strong>store.js · <code>setUniverseFilter</code></strong>
+        <span>
+          El mismo patrón con el otro eje. Y fíjate en que
+          <code>#computeVisible</code> es el único sitio que sabe cómo se
+          combinan los tres filtros.
+        </span>
+      </li>
+    </ol>
+
+    <p class="ayuda">
+      Los tres TODOs son el argumento del bloque entero. En el 02,
+      <code>store.js</code> tenía un filtro y ninguna forma de añadir otro sin
+      reescribirlo. Ahora el sitio es uno, y añadir un cuarto filtro es una
+      línea.
+    </p>
+
+    <script type="module" src="/08-integracion/app.js"></script>
+  </body>
+</html>

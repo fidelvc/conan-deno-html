@@ -82,14 +82,14 @@ export function escapeHtml(value: string): string {
  * TODO 1 · Genera la barra de navegación.
  *
  * @param active El `href` de la sección actual, o `undefined` si no hay
- *               ninguna. Cuando coincide, su `<a>` lleva `class="activo"`.
+ *               ninguna. Cuando coincide, su `<a>` lleva `class="active"`.
  * @returns El HTML de la barra, ya metido en un `<nav>`.
  *
  * Contrato exacto:
  *   - Un `<nav>` que envuelve todo.
  *   - Un `<a href="...">etiqueta</a>` por cada entrada de `NAV_LINKS`, en orden.
  *   - Los `<a>` van separados por un `" · "` (punto medio).
- *   - El `<a>` de la sección activa añade `class="activo"`, y solo ese.
+ *   - El `<a>` de la sección activa añade `class="active"`, y solo ese.
  *
  * Pistas:
  *   - `NAV_LINKS.map(...)` te da un array de cadenas; `.join(" · ")` las pega.

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>03 · Templates</title>
+    <link rel="stylesheet" href="/assets/estilos.css" />
+  </head>
+  <body>
+    <h1>03 · Templates</h1>
+    <p class="ayuda">
+      El mismo comportamiento, pero el HTML de la tarjeta deja de ser una cadena.
+      Está en un <code>&lt;template&gt;</code> real, y un Custom Element se
+      encarga de clonarlo por cada personaje.
+    </p>
+
+    <form id="search-form">
+      <label for="query">Buscar</label>
+      <input id="query" name="query" type="search" autocomplete="off" />
+    </form>
+
+    <p id="result-count" class="ayuda"></p>
+
+    <character-list id="characters"></character-list>
+
+    <!--
+      El template vive aquí, en el HTML. Eso es el punto: el navegador lo
+      parsea una vez y el editor lo resalta. Su contenido NO se pinta hasta
+      que alguien lo clona dentro del documento.
+    -->
+    <template id="character-card-template">
+      <li class="character">
+        <h2 data-field="name"></h2>
+        <p class="family" data-field="family"></p>
+        <p class="description" data-field="description"></p>
+        <ul class="tags" data-field="tags"></ul>
+      </li>
+    </template>
+
+    <h2>TODOs</h2>
+    <ol>
+      <li class="tarea" id="todo-1">
+        <strong>character-list.js · <code>render</code></strong>
+        <span>
+          Clona el <code>&lt;template&gt;</code> por cada personaje y lo mete
+          dentro de <code>&lt;character-card&gt;</code>.
+        </span>
+      </li>
+      <li class="tarea" id="todo-2">
+        <strong>character-card.js · <code>CharacterCard.character</code></strong>
+        <span>
+          El <code>setter</code> que recibe el personaje y rellena el
+          <code>&lt;template&gt;</code> con <code>textContent</code>.
+        </span>
+      </li>
+    </ol>
+
+    <p class="ayuda">
+      Un detalle: los Custom Elements se registran con el guion en el nombre, y
+      siempre en minúsculas. <code>&lt;CharacterCard&gt;</code> no es un
+      componente.
+    </p>
+
+    <script type="module" src="/03-templates/app.js"></script>
+  </body>
+</html>

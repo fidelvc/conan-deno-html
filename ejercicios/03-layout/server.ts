@@ -68,7 +68,7 @@ function groupsPage(): Response {
 
   return page(
     "Grupos",
-    `<h1>Grupos</h1><ul class="lista">${items}</ul>`,
+    `<h1>Grupos</h1><ul class="list">${items}</ul>`,
     "/grupos",
   );
 }

@@ -36,10 +36,10 @@ export function findCharacter(id: string): Character | undefined {
  * TODO 1 · Pinta las etiquetas de un personaje.
  *
  * @param tags Etiquetas del personaje. Puede venir vacía.
- * @returns Un `<ul class="etiquetas">` con un `<li>` por etiqueta.
+ * @returns Un `<ul class="tags">` con un `<li>` por etiqueta.
  *
  * Contrato exacto:
- *   - `<ul class="etiquetas">...</ul>`, siempre, incluso si `tags` está vacío.
+ *   - `<ul class="tags">...</ul>`, siempre, incluso si `tags` está vacío.
  *   - Un `<li>texto</li>` por etiqueta, en el orden del array.
  *   - Cada texto pasa por `escapeHtml`.
  *   - Sin espacios ni saltos de línea entre los `<li>`: `<li>a</li><li>b</li>`.
@@ -62,7 +62,7 @@ export function tagList(tags: string[]): string {
  * como lista de objetos `{ to, type }` y no como un array de strings.
  *
  * @param character El personaje cuyas relaciones hay que pintar.
- * @returns Un `<ul class="relaciones">` con un `<li>` por vínculo.
+ * @returns Un `<ul class="relationships">` con un `<li>` por vínculo.
  *
  * Contrato exacto, por cada relación:
  *   - `<li>{tipo}: {nombre}</li>`
@@ -88,12 +88,12 @@ export function relationshipList(character: Character): string {
 /**
  * TODO 3 · Pinta la tarjeta de un personaje.
  *
- * @returns Un `<article class="personaje">` con:
+ * @returns Un `<article class="character">` con:
  *   - `<h2><a href="/personajes/{id}">{name}</a></h2>`
  *   - `<p class="alias">también conocida como Kuroneko</p>` SOLO si hay alias.
- *   - `<p class="grupo">{etiqueta del grupo}</p>`
+ *   - `<p class="group">{etiqueta del grupo}</p>`
  *   - `tagList(character.tags)`
- *   - `<p class="resumen">{description}</p>`
+ *   - `<p class="summary">{description}</p>`
  *
  * Contrato exacto:
  *   - El `href` es `/personajes/` seguido del `id`.
@@ -123,5 +123,5 @@ export function characterCard(character: Character): string {
 
 /** Junta muchas tarjetas. Un `map` y un `join`: eso es todo. */
 export function characterGrid(characters: Character[]): string {
-  return `<div class="rejilla">${characters.map(characterCard).join("")}</div>`;
+  return `<div class="grid">${characters.map(characterCard).join("")}</div>`;
 }

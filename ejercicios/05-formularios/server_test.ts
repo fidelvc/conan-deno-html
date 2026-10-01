@@ -8,11 +8,11 @@
  *   - Los de `formulario.test.ts` son funciones puras. Corren en microsegundos.
  *   - Los de aquí son extremo a extremo: mandan una `Request` al handler y
  *     miran el `Response`. Tardan milisegundos, pero comprueban el flujo
- *     completo (validar → guardar → 303 → GET).
+ *     completo (validate → guardar → 303 → GET).
  *
  * COSA IMPORTANTE SOBRE ESTE FICHERO
  * ----------------------------------
- * `altas` es un array en memoria, COMPARTIDO entre todos los tests del
+ * `drafts` es un array en memoria, COMPARTIDO entre todos los tests del
  * fichero. Si un test crea un alta, los siguientes la ven. Por eso casi todos
  * usan nombres distintos y únicos, y por eso hay un test que mira el 409.
  * No los reordenes sin pensar, o empiezan a fallar en sitios raros.
@@ -20,43 +20,43 @@
 
 import { assertEquals, assertMatch, assertStringIncludes } from "@std/assert";
 import {
-  ALTA_VACIA,
-  crearRedirect,
+  createRedirect,
+  EMPTY_DRAFT,
+  errorList,
   escapeHtml,
   GROUPS,
-  leerCampos,
-  LIMITES,
-  listaErrores,
-  renderAlta,
-  SIN_ERRORES,
+  LIMITS,
+  NO_ERRORS,
+  readFields,
+  renderDraftForm,
   slug,
-  validar,
+  validate,
 } from "./formulario.ts";
-import { existeAlta, handler, listarAltas } from "./server.ts";
-import type { Alta, Errores } from "./formulario.ts";
+import { draftExists, handler, listDrafts } from "./server.ts";
+import type { Draft, Errors } from "./formulario.ts";
 
 const BASE = "http://localhost:8000";
-const NOMBRE_VALIDO = "Sena Akagi";
+const VALID_NAME = "Sena Akagi";
 
 function get(path: string): Promise<Response> {
   return Promise.resolve(handler(new Request(`${BASE}${path}`)));
 }
 
-function form(datos: Record<string, string>): Request {
+function form(fields: Record<string, string>): Request {
   // Esto es EXACTAMENTE lo que manda un `<form method="post">` real cuando no
   // tiene `enctype="multipart/form-data"`: el cuerpo es
   // `application/x-www-form-urlencoded`, o sea pares clave=valor con el texto
   // escapado.
   //
   // Ojo con dos atajos que NO existen y que todo el mundo se inventa:
-  //   - `new Request(url, { method: "POST", formData: datos })`. No existe esa
+  //   - `new Request(url, { method: "POST", formData: fields })`. No existe esa
   //     opción en `RequestInit`. No da error al construir (TypeScript se queja,
   //     el runtime se lo come), pero deja el cuerpo vacío y sin content-type.
-  //   - `new Request(url, { method: "POST", body: datos })`. Un objeto plano no
+  //   - `new Request(url, { method: "POST", body: fields })`. Un objeto plano no
   //     se puede convertir a texto, así que tampoco vale.
   return new Request(`${BASE}/nuevo`, {
     method: "POST",
-    body: new URLSearchParams(datos),
+    body: new URLSearchParams(fields),
     headers: { "content-type": "application/x-www-form-urlencoded" },
   });
 }
@@ -65,193 +65,196 @@ function form(datos: Record<string, string>): Request {
 // TIPOS Y CONSTANTES
 // ─────────────────────────────────────────────────────────────────────────────
 
-Deno.test("ALTA_VACIA son tres strings vacíos", () => {
-  assertEquals(ALTA_VACIA, { nombre: "", grupo: "", descripcion: "" });
+Deno.test("EMPTY_DRAFT son tres strings vacíos", () => {
+  assertEquals(EMPTY_DRAFT, { name: "", group: "", description: "" });
 });
 
-Deno.test("SIN_ERRORES es un objeto vacío", () => {
-  assertEquals(SIN_ERRORES, {});
-  assertEquals(Object.keys(SIN_ERRORES).length, 0);
+Deno.test("NO_ERRORS es un objeto vacío", () => {
+  assertEquals(NO_ERRORS, {});
+  assertEquals(Object.keys(NO_ERRORS).length, 0);
 });
 
-Deno.test("LIMITES cuadra con lo que se pide", () => {
-  assertEquals(LIMITES.nombre.min, 2);
-  assertEquals(LIMITES.nombre.max, 40);
-  assertEquals(LIMITES.descripcion.max, 200);
+Deno.test("LIMITS cuadra con lo que se pide", () => {
+  assertEquals(LIMITS.name.min, 2);
+  assertEquals(LIMITS.name.max, 40);
+  assertEquals(LIMITS.description.max, 200);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// leerCampos
+// readFields
 // ─────────────────────────────────────────────────────────────────────────────
 
-Deno.test("leerCampos saca los tres campos", () => {
+Deno.test("readFields saca los tres campos", () => {
   const data = new FormData();
-  data.set("nombre", "Sena");
-  data.set("grupo", "familia-akagi");
-  data.set("descripcion", "la hermana lista");
+  data.set("name", "Sena");
+  data.set("group", "familia-akagi");
+  data.set("description", "la hermana lista");
 
-  assertEquals(leerCampos(data), {
-    nombre: "Sena",
-    grupo: "familia-akagi",
-    descripcion: "la hermana lista",
+  assertEquals(readFields(data), {
+    name: "Sena",
+    group: "familia-akagi",
+    description: "la hermana lista",
   });
 });
 
-Deno.test("leerCampos devuelve los TRES campos aunque falten", () => {
-  const alta = leerCampos(new FormData());
-  assertEquals(alta.nombre, "");
-  assertEquals(alta.grupo, "");
-  assertEquals(alta.descripcion, "");
+Deno.test("readFields devuelve los TRES campos aunque falten", () => {
+  const draft = readFields(new FormData());
+  assertEquals(draft.name, "");
+  assertEquals(draft.group, "");
+  assertEquals(draft.description, "");
 });
 
-Deno.test("leerCampos aplica trim", () => {
+Deno.test("readFields aplica trim", () => {
   const data = new FormData();
-  data.set("nombre", "  Sena Akagi  \n");
-  assertEquals(leerCampos(data).nombre, "Sena Akagi");
+  data.set("name", "  Sena Akagi  \n");
+  assertEquals(readFields(data).name, "Sena Akagi");
 });
 
-Deno.test("leerCampos NO devuelve undefined (el tipo lo engaña)", () => {
+Deno.test("readFields NO devuelve undefined (el tipo lo engaña)", () => {
   // `FormData.get()` devuelve `string | File | null`. Los tres casos raros:
   const data = new FormData();
-  data.set("nombre", new File(["x"], "nuevo.txt"));
+  data.set("name", new File(["x"], "nuevo.txt"));
 
-  const alta = leerCampos(data);
-  assertEquals(typeof alta.nombre, "string");
-  assertEquals(typeof alta.grupo, "string");
-  assertEquals(typeof alta.descripcion, "string");
+  const draft = readFields(data);
+  assertEquals(typeof draft.name, "string");
+  assertEquals(typeof draft.group, "string");
+  assertEquals(typeof draft.description, "string");
 });
 
-Deno.test("leerCampos con un File en el campo no lo pone como nombre", () => {
+Deno.test("readFields con un File en el campo no lo pone como name", () => {
   const data = new FormData();
-  data.set("nombre", new File(["contenido"], "secreto.txt"));
+  data.set("name", new File(["contenido"], "secreto.txt"));
   // No puede ser el contenido del fichero, y tampoco `[object File]`.
-  const alta = leerCampos(data);
-  assertEquals(alta.nombre.includes("contenido"), false);
-  assertEquals(alta.nombre, "");
+  const draft = readFields(data);
+  assertEquals(draft.name.includes("contenido"), false);
+  assertEquals(draft.name, "");
 });
 
-Deno.test("leerCampos ignora campos que no son del formulario", () => {
+Deno.test("readFields ignora campos que no son del formulario", () => {
   const data = new FormData();
-  data.set("nombre", "Sena");
+  data.set("name", "Sena");
   data.set("admin", "true");
   data.set("_csrf", "falso");
-  assertEquals(Object.keys(leerCampos(data)).sort(), [
-    "descripcion",
-    "grupo",
-    "nombre",
+  assertEquals(Object.keys(readFields(data)).sort(), [
+    "description",
+    "group",
+    "name",
   ]);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// validar
+// validate
 // ─────────────────────────────────────────────────────────────────────────────
 
-function altaValida(overrides: Partial<Alta> = {}): Alta {
-  const base: Alta = {
-    nombre: NOMBRE_VALIDO,
-    grupo: "familia-akagi",
-    descripcion: "",
+function validDraft(overrides: Partial<Draft> = {}): Draft {
+  const base: Draft = {
+    name: VALID_NAME,
+    group: "familia-akagi",
+    description: "",
   };
   return { ...base, ...overrides };
 }
 
-Deno.test("validar acepta un alta correcta", () => {
-  assertEquals(validar(altaValida()), {});
+Deno.test("validate acepta un alta correcta", () => {
+  assertEquals(validate(validDraft()), {});
 });
 
-Deno.test("validar rechaza el nombre vacío", () => {
-  const errores = validar(altaValida({ nombre: "" }));
-  assertEquals(typeof errores.nombre, "string");
+Deno.test("validate rechaza el name vacío", () => {
+  const errors = validate(validDraft({ name: "" }));
+  assertEquals(typeof errors.name, "string");
 });
 
-Deno.test("validar rechaza un nombre de 1 carácter", () => {
-  assertEquals(typeof validar(altaValida({ nombre: "S" })).nombre, "string");
+Deno.test("validate rechaza un name de 1 carácter", () => {
+  assertEquals(typeof validate(validDraft({ name: "S" })).name, "string");
 });
 
-Deno.test("validar acepta un nombre de 2 caracteres", () => {
-  assertEquals(validar(altaValida({ nombre: "Se" })).nombre, undefined);
+Deno.test("validate acepta un name de 2 caracteres", () => {
+  assertEquals(validate(validDraft({ name: "Se" })).name, undefined);
 });
 
-Deno.test("validar rechaza un nombre de 41 caracteres", () => {
+Deno.test("validate rechaza un name de 41 caracteres", () => {
   assertEquals(
-    typeof validar(altaValida({ nombre: "a".repeat(41) })).nombre,
+    typeof validate(validDraft({ name: "a".repeat(41) })).name,
     "string",
   );
 });
 
-Deno.test("validar acepta un nombre de 40 caracteres", () => {
+Deno.test("validate acepta un name de 40 caracteres", () => {
   assertEquals(
-    validar(altaValida({ nombre: "a".repeat(40) })).nombre,
+    validate(validDraft({ name: "a".repeat(40) })).name,
     undefined,
   );
 });
 
-Deno.test("validar rechaza el grupo vacío", () => {
-  assertEquals(typeof validar(altaValida({ grupo: "" })).grupo, "string");
+Deno.test("validate rechaza el group vacío", () => {
+  assertEquals(typeof validate(validDraft({ group: "" })).group, "string");
 });
 
-Deno.test("validar rechaza un grupo inventado", () => {
+Deno.test("validate rechaza un group inventado", () => {
   // El <select> se puede manipular. Esto no es un <select>, es un POST cualquiera.
   assertEquals(
-    typeof validar(altaValida({ grupo: "grupo-inventado" })).grupo,
+    typeof validate(validDraft({ group: "group-inventado" })).group,
     "string",
   );
 });
 
-Deno.test("validar acepta CUALQUIER grupo de GROUPS", () => {
+Deno.test("validate acepta CUALQUIER group de GROUPS", () => {
   for (const id of Object.keys(GROUPS)) {
     assertEquals(
-      validar(altaValida({ grupo: id })).grupo,
+      validate(validDraft({ group: id })).group,
       undefined,
-      `el grupo ${id} debería valer`,
+      `el group ${id} debería valer`,
     );
   }
 });
 
-Deno.test("validar acepta la descripción vacía (es opcional)", () => {
-  assertEquals(validar(altaValida({ descripcion: "" })).descripcion, undefined);
+Deno.test("validate acepta la descripción vacía (es opcional)", () => {
+  assertEquals(
+    validate(validDraft({ description: "" })).description,
+    undefined,
+  );
 });
 
-Deno.test("validar rechaza una descripción de 201 caracteres", () => {
+Deno.test("validate rechaza una descripción de 201 caracteres", () => {
   assertEquals(
-    typeof validar(altaValida({ descripcion: "a".repeat(201) })).descripcion,
+    typeof validate(validDraft({ description: "a".repeat(201) })).description,
     "string",
   );
 });
 
-Deno.test("validar devuelve TODOS los errores a la vez", () => {
-  const errores = validar({
-    nombre: "",
-    grupo: "banana",
-    descripcion: "a".repeat(500),
+Deno.test("validate devuelve TODOS los errors a la vez", () => {
+  const errors = validate({
+    name: "",
+    group: "banana",
+    description: "a".repeat(500),
   });
-  assertEquals(Object.keys(errores).sort(), ["descripcion", "grupo", "nombre"]);
+  assertEquals(Object.keys(errors).sort(), ["description", "group", "name"]);
 });
 
 Deno.test("los mensajes de error son texto útil, no 'error'", () => {
-  const errores = validar(altaValida({ nombre: "" }));
-  const mensaje = errores.nombre ?? "";
-  assertEquals(mensaje.length > 10, true);
-  assertEquals(mensaje.toLowerCase().includes("error"), false);
-  assertMatch(mensaje, /nombre/i);
+  const errors = validate(validDraft({ name: "" }));
+  const message = errors.name ?? "";
+  assertEquals(message.length > 10, true);
+  assertEquals(message.toLowerCase().includes("error"), false);
+  assertMatch(message, /name/i);
 });
 
-Deno.test("validar es puro: no toca lo que recibe", () => {
-  const entrada = altaValida();
-  validar(entrada);
-  assertEquals(entrada, altaValida());
+Deno.test("validate es puro: no toca lo que recibe", () => {
+  const entrada = validDraft();
+  validate(entrada);
+  assertEquals(entrada, validDraft());
 });
 
-Deno.test("listaErrores saca los mensajes en orden", () => {
-  const errores: Errores = {
-    nombre: "Pon un nombre",
-    grupo: "Elige grupo",
+Deno.test("errorList saca los mensajes en orden", () => {
+  const errors: Errors = {
+    name: "Pon un name",
+    group: "Elige group",
   };
-  assertEquals(listaErrores(errores), ["Pon un nombre", "Elige grupo"]);
+  assertEquals(errorList(errors), ["Pon un name", "Elige group"]);
 });
 
-Deno.test("listaErrores de SIN_ERRORES es []", () => {
-  assertEquals(listaErrores(SIN_ERRORES), []);
+Deno.test("errorList de NO_ERRORS es []", () => {
+  assertEquals(errorList(NO_ERRORS), []);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -291,14 +294,14 @@ Deno.test("slug deja los números", () => {
   assertEquals(slug("Stardust Witch Meruru 0"), "stardust-witch-meruru-0");
 });
 
-Deno.test("slug de un nombre vacío es ''", () => {
+Deno.test("slug de un name vacío es ''", () => {
   assertEquals(slug(""), "");
   assertEquals(slug("   "), "");
 });
 
 Deno.test("slug nunca deja guiones dobles", () => {
-  for (const nombre of ["a  b", "a--b", "a .- b", "a//b"]) {
-    assertEquals(slug(nombre).includes("--"), false, nombre);
+  for (const name of ["a  b", "a--b", "a .- b", "a//b"]) {
+    assertEquals(slug(name).includes("--"), false, name);
   }
 });
 
@@ -310,149 +313,149 @@ Deno.test("slug no puede usarse para salir de la ruta", () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// renderAlta
+// renderDraftForm
 // ─────────────────────────────────────────────────────────────────────────────
 
-Deno.test("renderAlta pinta un formulario con method=post", () => {
-  const html = renderAlta(ALTA_VACIA, SIN_ERRORES, "nuevo");
+Deno.test("renderDraftForm pinta un formulario con method=post", () => {
+  const html = renderDraftForm(EMPTY_DRAFT, NO_ERRORS, "new");
   assertStringIncludes(html, "<form");
   assertStringIncludes(html, 'method="post"');
   assertStringIncludes(html, 'action="/nuevo"');
 });
 
-Deno.test("renderAlta tiene un input por cada campo", () => {
-  const html = renderAlta(ALTA_VACIA, SIN_ERRORES, "nuevo");
-  for (const name of ["nombre", "grupo", "descripcion"]) {
+Deno.test("renderDraftForm tiene un input por cada campo", () => {
+  const html = renderDraftForm(EMPTY_DRAFT, NO_ERRORS, "new");
+  for (const name of ["name", "group", "description"]) {
     assertStringIncludes(html, `name="${name}"`);
   }
 });
 
-Deno.test("renderAlta con valores previos los deja en el value", () => {
-  const html = renderAlta(
-    { nombre: "Sena", grupo: "familia-akagi", descripcion: "la hermana" },
-    SIN_ERRORES,
-    "nuevo",
+Deno.test("renderDraftForm con values previos los deja en el value", () => {
+  const html = renderDraftForm(
+    { name: "Sena", group: "familia-akagi", description: "la hermana" },
+    NO_ERRORS,
+    "new",
   );
   assertStringIncludes(html, 'value="Sena"');
   assertStringIncludes(html, "la hermana");
 });
 
-Deno.test("renderAlta pinta una option por cada grupo", () => {
-  const html = renderAlta(ALTA_VACIA, SIN_ERRORES, "nuevo");
+Deno.test("renderDraftForm pinta una option por cada group", () => {
+  const html = renderDraftForm(EMPTY_DRAFT, NO_ERRORS, "new");
   for (const id of Object.keys(GROUPS)) {
     assertStringIncludes(html, `value="${id}"`);
   }
 });
 
-Deno.test("renderAlta marca el grupo elegido con selected", () => {
-  const html = renderAlta(
-    { nombre: "", grupo: "familia-akagi", descripcion: "" },
-    SIN_ERRORES,
-    "nuevo",
+Deno.test("renderDraftForm marca el group elegido con selected", () => {
+  const html = renderDraftForm(
+    { name: "", group: "familia-akagi", description: "" },
+    NO_ERRORS,
+    "new",
   );
   assertMatch(html, /<option value="familia-akagi"[^>]*selected/);
 });
 
-Deno.test("renderAlta sin grupo elegido NO preselecciona un grupo", () => {
+Deno.test("renderDraftForm sin group elegido NO preselecciona un group", () => {
   // Puede (o no) marcar el <option value=""> de "Elige uno": las dos son HTML
-  // válido. Lo que no puede hacer es marcar un grupo que el usuario no eligió.
-  const html = renderAlta(ALTA_VACIA, SIN_ERRORES, "nuevo");
+  // válido. Lo que no puede hacer es marcar un group que el usuario no eligió.
+  const html = renderDraftForm(EMPTY_DRAFT, NO_ERRORS, "new");
   for (const id of Object.keys(GROUPS)) {
     assertEquals(
       new RegExp(`<option value="${id}"[^>]*selected`).test(html),
       false,
-      `preseleccionó el grupo ${id}`,
+      `preseleccionó el group ${id}`,
     );
   }
 });
 
-Deno.test("renderAlta ESCAPA el nombre con HTML dentro", () => {
-  // La parte importante del bloque. Un `nombre` con `<script>` tiene que
+Deno.test("renderDraftForm ESCAPA el name con HTML dentro", () => {
+  // La parte importante del bloque. Un `name` con `<script>` tiene que
   // aparecer escapado, no ejecutarse.
-  const html = renderAlta(
+  const html = renderDraftForm(
     {
-      nombre: "<script>alert(1)</script>",
-      grupo: "familia-akagi",
-      descripcion: "",
+      name: "<script>alert(1)</script>",
+      group: "familia-akagi",
+      description: "",
     },
-    SIN_ERRORES,
-    "nuevo",
+    NO_ERRORS,
+    "new",
   );
   assertEquals(html.includes("<script>"), false);
   assertStringIncludes(html, "&lt;script&gt;");
 });
 
-Deno.test("renderAlta ESCAPA la descripción con HTML dentro", () => {
-  const html = renderAlta(
+Deno.test("renderDraftForm ESCAPA la descripción con HTML dentro", () => {
+  const html = renderDraftForm(
     {
-      nombre: "Sena",
-      grupo: "familia-akagi",
-      descripcion: "<img src=x onerror=alert(1)>",
+      name: "Sena",
+      group: "familia-akagi",
+      description: "<img src=x onerror=alert(1)>",
     },
-    SIN_ERRORES,
-    "nuevo",
+    NO_ERRORS,
+    "new",
   );
   assertEquals(html.includes("<img"), false);
   assertStringIncludes(html, "&lt;img");
 });
 
-Deno.test("renderAlta ESCAPA las comillas para no romper el atributo", () => {
-  const html = renderAlta(
-    { nombre: '" onfocus="alert(1)', grupo: "familia-akagi", descripcion: "" },
-    SIN_ERRORES,
-    "nuevo",
+Deno.test("renderDraftForm ESCAPA las comillas para no romper el atributo", () => {
+  const html = renderDraftForm(
+    { name: '" onfocus="alert(1)', group: "familia-akagi", description: "" },
+    NO_ERRORS,
+    "new",
   );
   assertEquals(html.includes('" onfocus="'), false);
   assertStringIncludes(html, "&quot;");
 });
 
-Deno.test("renderAlta muestra los mensajes de error", () => {
-  const html = renderAlta(ALTA_VACIA, { nombre: "Pon un nombre" }, "error");
-  assertStringIncludes(html, "Pon un nombre");
+Deno.test("renderDraftForm muestra los mensajes de error", () => {
+  const html = renderDraftForm(EMPTY_DRAFT, { name: "Pon un name" }, "error");
+  assertStringIncludes(html, "Pon un name");
 });
 
-Deno.test("renderAlta sin errores NO inventa un aviso de error", () => {
-  const html = renderAlta(ALTA_VACIA, SIN_ERRORES, "nuevo");
+Deno.test("renderDraftForm sin errors NO inventa un aviso de error", () => {
+  const html = renderDraftForm(EMPTY_DRAFT, NO_ERRORS, "new");
   assertEquals(html.includes('class="error"'), false);
 });
 
-Deno.test("renderAlta en status error SÍ trae el aviso", () => {
+Deno.test("renderDraftForm en status error SÍ trae el aviso", () => {
   assertStringIncludes(
-    renderAlta(ALTA_VACIA, { grupo: "Elige un grupo" }, "error"),
-    "Elige un grupo",
+    renderDraftForm(EMPTY_DRAFT, { group: "Elige un group" }, "error"),
+    "Elige un group",
   );
 });
 
-Deno.test("renderAlta escapó un grupo manipulado en el value", () => {
-  const html = renderAlta(
-    { nombre: "Sena", grupo: '"><script>alert(1)</script>', descripcion: "" },
-    SIN_ERRORES,
-    "nuevo",
+Deno.test("renderDraftForm escapó un group manipulado en el value", () => {
+  const html = renderDraftForm(
+    { name: "Sena", group: '"><script>alert(1)</script>', description: "" },
+    NO_ERRORS,
+    "new",
   );
   assertEquals(html.includes("<script"), false);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// crearRedirect
+// createRedirect
 // ─────────────────────────────────────────────────────────────────────────────
 
-Deno.test("crearRedirect devuelve 303", () => {
-  assertEquals(crearRedirect("/personajes/sena-akagi").status, 303);
+Deno.test("createRedirect devuelve 303", () => {
+  assertEquals(createRedirect("/personajes/sena-akagi").status, 303);
 });
 
-Deno.test("crearRedirect pone la cabecera Location", () => {
+Deno.test("createRedirect pone la cabecera Location", () => {
   assertEquals(
-    crearRedirect("/personajes/sena-akagi").headers.get("location"),
+    createRedirect("/personajes/sena-akagi").headers.get("location"),
     "/personajes/sena-akagi",
   );
 });
 
-Deno.test("crearRedirect NO tiene cuerpo", () => {
-  assertEquals(crearRedirect("/personajes/sena-akagi").body, null);
+Deno.test("createRedirect NO tiene cuerpo", () => {
+  assertEquals(createRedirect("/personajes/sena-akagi").body, null);
 });
 
-Deno.test("crearRedirect no es 302 (el 303 es el que cambia POST por GET)", () => {
-  const status = crearRedirect("/x").status;
+Deno.test("createRedirect no es 302 (el 303 es el que cambia POST por GET)", () => {
+  const status = createRedirect("/x").status;
   assertEquals(status === 302, false);
   assertEquals(status === 303, true);
 });
@@ -468,13 +471,13 @@ Deno.test("GET /nuevo responde 200 con el formulario", async () => {
   assertStringIncludes(await res.text(), "<form");
 });
 
-Deno.test("GET /nuevo NO crea ninguna alta", async () => {
-  const antes = listarAltas().length;
+Deno.test("GET /nuevo NO crea ningún alta", async () => {
+  const antes = listDrafts().length;
   await get("/nuevo");
-  assertEquals(listarAltas().length, antes);
+  assertEquals(listDrafts().length, antes);
 });
 
-Deno.test("GET / responde 200 y dice que no hay altas al principio", async () => {
+Deno.test("GET / responde 200 y dice que no hay drafts al principio", async () => {
   const res = await get("/");
   assertEquals(res.status, 200);
   assertStringIncludes(await res.text(), "Oreimo");
@@ -486,7 +489,7 @@ Deno.test("GET / responde 200 y dice que no hay altas al principio", async () =>
 
 Deno.test("POST válido responde 303 y NO devuelve HTML", async () => {
   const res = await handler(
-    form({ nombre: "Kurara Test", grupo: "club-meruru" }),
+    form({ name: "Kurara Test", group: "club-meruru" }),
   );
   assertEquals(res.status, 303);
   const cuerpo = await res.text();
@@ -495,103 +498,103 @@ Deno.test("POST válido responde 303 y NO devuelve HTML", async () => {
 
 Deno.test("POST válido manda a la ficha del slug", async () => {
   const res = await handler(
-    form({ nombre: "Kirino Test", grupo: "familia-kosaka" }),
+    form({ name: "Kirino Test", group: "familia-kosaka" }),
   );
   assertEquals(res.headers.get("location"), "/personajes/kirino-test");
 });
 
 Deno.test("POST válido guarda el alta", async () => {
-  const res = await handler(form({ nombre: "Moe Test", grupo: "club-meruru" }));
+  const res = await handler(form({ name: "Moe Test", group: "club-meruru" }));
   assertEquals(res.status, 303);
-  assertEquals(existeAlta("moe-test"), true);
+  assertEquals(draftExists("moe-test"), true);
   assertEquals(
-    listarAltas().some((a) => a.nombre === "Moe Test"),
+    listDrafts().some((a) => a.name === "Moe Test"),
     true,
   );
 });
 
 Deno.test("después del POST, un GET a la ficha la encuentra", async () => {
-  await handler(form({ nombre: "Sora Test", grupo: "hermanas-gokou" }));
+  await handler(form({ name: "Sora Test", group: "hermanas-gokou" }));
   const res = await get("/personajes/sora-test");
   assertEquals(res.status, 200);
   assertStringIncludes(await res.text(), "Sora Test");
 });
 
 Deno.test("el PRG funciona: el GET de después NO crea otra alta", async () => {
-  const antes = listarAltas().length;
-  await handler(form({ nombre: "Rin Test", grupo: "familia-kurusu" }));
-  const trasPost = listarAltas().length;
+  const antes = listDrafts().length;
+  await handler(form({ name: "Rin Test", group: "familia-kurusu" }));
+  const trasPost = listDrafts().length;
   // Esto es lo que pasa si en vez del 303 devuelves HTML: el F5 repite el POST.
   await get("/personajes/rin-test");
   await get("/");
-  assertEquals(listarAltas().length, trasPost);
+  assertEquals(listDrafts().length, trasPost);
   assertEquals(trasPost, antes + 1);
 });
 
 Deno.test("el alta guardada conserva la descripción", async () => {
   await handler(
     form({
-      nombre: "Nana Test",
-      grupo: "familia-akagi",
-      descripcion: "con poderes de telepatía",
+      name: "Nana Test",
+      group: "familia-akagi",
+      description: "con poderes de telepatía",
     }),
   );
-  const alta = listarAltas().find((a) => a.nombre === "Nana Test");
-  assertEquals(alta?.descripcion, "con poderes de telepatía");
+  const draft = listDrafts().find((a) => a.name === "Nana Test");
+  assertEquals(draft?.description, "con poderes de telepatía");
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Extremo a extremo: POST con errores
+// Extremo a extremo: POST con errors
 // ─────────────────────────────────────────────────────────────────────────────
 
-Deno.test("POST sin nombre responde 400", async () => {
-  const res = await handler(form({ nombre: "", grupo: "familia-akagi" }));
+Deno.test("POST sin name responde 400", async () => {
+  const res = await handler(form({ name: "", group: "familia-akagi" }));
   assertEquals(res.status, 400);
 });
 
-Deno.test("POST sin nombre NO guarda nada", async () => {
-  const antes = listarAltas().length;
-  await handler(form({ nombre: "", grupo: "familia-akagi" }));
-  assertEquals(listarAltas().length, antes);
+Deno.test("POST sin name NO guarda nada", async () => {
+  const antes = listDrafts().length;
+  await handler(form({ name: "", group: "familia-akagi" }));
+  assertEquals(listDrafts().length, antes);
 });
 
-Deno.test("POST con errores devuelve el formulario otra vez", async () => {
-  const res = await handler(form({ nombre: "", grupo: "familia-akagi" }));
+Deno.test("POST con errors devuelve el formulario otra vez", async () => {
+  const res = await handler(form({ name: "", group: "familia-akagi" }));
   assertStringIncludes(await res.text(), "<form");
 });
 
-Deno.test("POST con errores CONSERVA lo que habías escrito", async () => {
+Deno.test("POST con errors CONSERVA lo que habías escrito", async () => {
   // El "sticky form": no obligues a reescribirlo todo por un error.
   const res = await handler(
-    form({ nombre: "", grupo: "familia-akagi", descripcion: "no la pierdo" }),
+    form({ name: "", group: "familia-akagi", description: "no la pierdo" }),
   );
   assertEquals(res.status, 400);
   assertStringIncludes(await res.text(), "no la pierdo");
 });
 
-Deno.test("POST sin grupo responde 400", async () => {
-  const res = await handler(form({ nombre: "Sin Grupo", grupo: "" }));
+Deno.test("POST sin group responde 400", async () => {
+  const res = await handler(form({ name: "Sin Grupo", group: "" }));
   assertEquals(res.status, 400);
 });
 
-Deno.test("POST con grupo inventado responde 400", async () => {
-  const res = await handler(form({ nombre: "Grupo Raro", grupo: "banana" }));
+Deno.test("POST con group inventado responde 400", async () => {
+  const res = await handler(form({ name: "Grupo Raro", group: "banana" }));
   assertEquals(res.status, 400);
-  assertEquals(existeAlta("grupo-raro"), false);
+  assertEquals(draftExists("group-raro"), false);
 });
 
 Deno.test("POST con solo símbolos da 400, no 500", async () => {
   // El slug acaba siendo "" y eso es un error de validación, no un crash.
-  const res = await handler(form({ nombre: "!!!", grupo: "familia-akagi" }));
+  const res = await handler(form({ name: "!!!", group: "familia-akagi" }));
   assertEquals(res.status, 400);
 });
 
 Deno.test("POST con descripción de 201 caracteres da 400", async () => {
   const res = await handler(
     form({
-      nombre: "Larga Test",
-      grupo: "familia-akagi",
-      descripcion: "a".repeat(201),
+      name: "Larga Test",
+      group: "familia-akagi",
+      description: "a".repeat(201),
     }),
   );
   assertEquals(res.status, 400);
@@ -600,23 +603,23 @@ Deno.test("POST con descripción de 201 caracteres da 400", async () => {
 Deno.test("POST con descripción de 200 caracteres SÍ vale", async () => {
   const res = await handler(
     form({
-      nombre: "Justa Test",
-      grupo: "familia-akagi",
-      descripcion: "a".repeat(200),
+      name: "Justa Test",
+      group: "familia-akagi",
+      description: "a".repeat(200),
     }),
   );
   assertEquals(res.status, 303);
 });
 
-Deno.test("nombre duplicado responde 409, no 303", async () => {
-  const datos = { nombre: "Repetida Test", grupo: "familia-akagi" };
-  const primera = await handler(form(datos));
+Deno.test("name duplicado responde 409, no 303", async () => {
+  const fields = { name: "Repetida Test", group: "familia-akagi" };
+  const primera = await handler(form(fields));
   assertEquals(primera.status, 303);
 
-  const segunda = await handler(form(datos));
+  const segunda = await handler(form(fields));
   assertEquals(segunda.status, 409);
   assertEquals(
-    listarAltas().filter((a) => a.nombre === "Repetida Test").length,
+    listDrafts().filter((a) => a.name === "Repetida Test").length,
     1,
   );
 });
@@ -627,27 +630,27 @@ Deno.test("nombre duplicado responde 409, no 303", async () => {
 
 Deno.test("un <script> en el nombre NO sale sin escapar tras un 400", async () => {
   const res = await handler(
-    form({ nombre: "<script>alert(1)</script>", grupo: "" }),
+    form({ name: "<script>alert(1)</script>", group: "" }),
   );
   const html = await res.text();
   assertEquals(html.includes("<script>alert(1)</script>"), false);
 });
 
 Deno.test("un <script> en el nombre tampoco se cuela al guardado", async () => {
-  // Con grupo válido, el alta se guarda: el nombre se pinta en el listado y en
+  // Con group válido, el alta se guarda: el name se pinta en el listado y en
   // la ficha, y ahí también tiene que estar escapado.
-  const nombre = "<img src=x onerror=alert(1)> Test";
-  const res = await handler(form({ nombre, grupo: "familia-akagi" }));
+  const name = "<img src=x onerror=alert(1)> Test";
+  const res = await handler(form({ name, group: "familia-akagi" }));
   assertEquals(res.status, 303);
 
-  const ficha = await get(`/personajes/${slug(nombre)}`);
+  const ficha = await get(`/personajes/${slug(name)}`);
   const html = await ficha.text();
   assertEquals(html.includes("<img src=x"), false);
   assertStringIncludes(html, "&lt;img");
 });
 
 Deno.test("el listado escapa todos los nombres", async () => {
-  await handler(form({ nombre: "<b>x</b> Kokoro", grupo: "club-videojuegos" }));
+  await handler(form({ name: "<b>x</b> Kokoro", group: "club-videojuegos" }));
   const html = await (await get("/")).text();
   assertEquals(html.includes("<b>x</b>"), false);
 });
@@ -655,9 +658,9 @@ Deno.test("el listado escapa todos los nombres", async () => {
 Deno.test("la ficha de un alta con HTML en la descripción escapa", async () => {
   await handler(
     form({
-      nombre: "Kurara Html",
-      grupo: "club-meruru",
-      descripcion: "<script>alert(1)</script>",
+      name: "Kurara Html",
+      group: "club-meruru",
+      description: "<script>alert(1)</script>",
     }),
   );
   const html = await (await get("/personajes/kurara-html")).text();
@@ -669,7 +672,7 @@ Deno.test("la ficha de un alta con HTML en la descripción escapa", async () => 
 // 404
 // ─────────────────────────────────────────────────────────────────────────────
 
-Deno.test("GET a un alta inexistente da 404", async () => {
+Deno.test("GET a una alta inexistente da 404", async () => {
   assertEquals((await get("/personajes/no-existe")).status, 404);
 });
 

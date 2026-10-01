@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>05 · Modificar</title>
+    <link rel="stylesheet" href="/assets/estilos.css" />
+  </head>
+  <body>
+    <h1>05 · Modificar</h1>
+    <p class="ayuda">
+      Ahora el estado cambia: marcas un personaje como favorito y la tarjeta lo
+      tiene que reflejar. El clic ocurre en la tarjeta y el dato vive en el
+      store, así que hace falta algo en el medio. Ese algo es un
+      <code>CustomEvent</code>.
+    </p>
+
+    <form id="search-form">
+      <label for="query">Buscar</label>
+      <input id="query" name="query" type="search" autocomplete="off" />
+    </form>
+
+    <p id="result-count" class="ayuda"></p>
+    <p class="ayuda">Favoritos: <span id="favorite-count">0</span></p>
+
+    <character-list id="characters"></character-list>
+
+    <template id="character-card-template">
+      <li class="character">
+        <h2 data-field="name"></h2>
+        <p class="family" data-field="family"></p>
+        <p class="description" data-field="description"></p>
+        <ul class="tags" data-field="tags"></ul>
+        <slot></slot>
+      </li>
+    </template>
+
+    <h2>TODOs</h2>
+    <ol>
+      <li class="tarea" id="todo-1">
+        <strong>store.js · <code>toggleFavorite</code></strong>
+        <span>
+          Da de alta o de baja un id en <code>favoriteIds</code> y avisa a los
+          oyentes. Que devuelva un <code>boolean</code> con el estado nuevo.
+        </span>
+      </li>
+      <li class="tarea" id="todo-2">
+        <strong>character-card.js · <code>favoriteChanged</code></strong>
+        <span>
+          Escucha el clic en el botón y lanza un
+          <code>CustomEvent</code> que suba con <code>bubbles: true</code>.
+        </span>
+      </li>
+      <li class="tarea" id="todo-3">
+        <strong>character-list.js · <code>connectedCallback</code></strong>
+        <span>
+          Escucha el evento del hijo y lo vuelve a lanzar. El componente padre
+          no sabe quién está escuchando arriba.
+        </span>
+      </li>
+    </ol>
+
+    <p class="ayuda">
+      El detalle que importa: la tarjeta <strong>no</strong> sabe si el
+      personaje es favorito. Solo dice "este botón se ha pulsado". Quien decide
+      es el store, y quien repinta es quien escucha.
+    </p>
+
+    <script type="module" src="/05-modificar/app.js"></script>
+  </body>
+</html>

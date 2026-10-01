@@ -58,7 +58,7 @@ searchText (2)  →  filterCharacters (1)  →  renderCharacters (3)  →  app.j
 
 Los dos de `app.js` van **al final**, y tu `matchesQuery` no se puede probar
 hasta que el servidor pinte las tarjetas. `app.js` busca elementos con
-`[data-buscar]` (`public/app.js:21`), y ese atributo lo pone el TODO 3. Con el
+`[data-search]` (`public/app.js:21`), y ese atributo lo pone el TODO 3. Con el
 servidor roto no hay tarjetas, no hay nada que filtrar, y cualquier cosa que
 escribas ahí se queda sin poder probar.
 
@@ -98,7 +98,7 @@ Trampas concretas, con su test:
   (`server_test.ts:56`).
 
 Piensa en esto: la salida de esta función va a meterse dentro de un atributo
-HTML (`data-buscar=...`), entre comillas. ¿Qué pasaría si un nombre tuviera
+HTML (`data-search=...`), entre comillas. ¿Qué pasaría si un nombre tuviera
 comillas dentro? Eso lo resuelve el TODO 3.
 
 ### TODO 1 · `filterCharacters(characters, query)` → `Character[]`
@@ -135,16 +135,16 @@ Lo que tiene que devolver: el HTML de las tarjetas, ya pegado y **listo para
 meter dentro del `<ul>`**, sin el `<ul>` alrededor. El contrato exacto está en
 el docstring, pero aquí va desglosado, porque los tests son muy literales:
 
-- Un `<li class="personaje" data-buscar="...">` por personaje, y el
-  `data-buscar` es lo que devuelva `searchText`.
+- Un `<li class="character" data-search="...">` por personaje, y el
+  `data-search` es lo que devuelva `searchText`.
 - Dentro, un `<h2>` con el `name`.
 - Si hay alias, un `<p class="alias">` con el texto "también conocida como
   Kuroneko". Si no hay, ese `<p>` **no aparece en absoluto**: el test
   `server_test.ts:166` comprueba que la palabra "también conocida como"
   desaparece para Kyousuke.
-- Después, un `<ul class="etiquetas">` con un `<li>` por cada tag. El test
-  `server_test.ts:170` cuenta los `<li>` que hay **después** de
-  `class="etiquetas"`, así que el orden importa.
+- Después, un `<ul class="tags">` con un `<li>` por cada tag. El test
+  `server_test.ts:170` cuenta los `<li>` que hay **después** de `class="tags"`,
+  así que el orden importa.
 - Si la lista está vacía, devuelve la cadena vacía. Nada de texto de "no hay
   resultados" aquí: eso lo pone el `<p id="vacio">` que ya está en el HTML.
 
@@ -157,7 +157,7 @@ Trampas concretas:
   pegarlo con `join("")`. Si lo concatenas de otra manera, el array se convierte
   a texto con comas entre elementos y aparecen tarjetas del estilo `</li>,<li>`.
   El test `server_test.ts:179` caza exactamente eso.
-- **Escapa el `data-buscar`.** Aquí sí hace falta `escapeHtml`, que ya tienes
+- **Escapa el `data-search`.** Aquí sí hace falta `escapeHtml`, que ya tienes
   escrita y exportada en `server.ts:141`, porque el texto va entre comillas
   dobles dentro de un atributo. El test `server_test.ts:273` inventa un
   personaje llamado `Safinata "$&"` y comprueba que sale escapado. Fíjate en que
@@ -178,14 +178,14 @@ tienes medio hecho, así que esto es corto. Revisa dos cosas:
   normalización y quédate con una.
 
 Ojo con una tentación: aquí **no** busques en el `textContent` de la tarjeta.
-Existe el atributo `data-buscar` justo para esto, y el servidor lo dejó
+Existe el atributo `data-search` justo para esto, y el servidor lo dejó
 normalizado. Si el navegador filtra por un sitio y el servidor por otro, la
 página miente, y es justo lo que el README avisa de que hay que comparar.
 
 ### TODO 5 · `describeCount(visible, total)` → `string` (en `app.js`)
 
 Lo que tiene que devolver: el texto del contador, listo para meter en
-`#contador`. Solo eso; de escribirlo se encarga `applyFilter` (`app.js:74`).
+`#result-count`. Solo eso; de escribirlo se encarga `applyFilter` (`app.js:74`).
 
 Lo importante es el **plural**: "1 personaje" y "0 personajes" no se escriben
 igual, y "17 personajes" tampoco. Y `visible` nunca es mayor que `total`, así

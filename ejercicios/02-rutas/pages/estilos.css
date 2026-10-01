@@ -1,7 +1,7 @@
 :root {
   color-scheme: light dark;
-  --borde: color-mix(in oklab, currentColor 20%, transparent);
-  --tenue: color-mix(in oklab, currentColor 65%, transparent);
+  --border: color-mix(in oklab, currentColor 20%, transparent);
+  --muted: color-mix(in oklab, currentColor 65%, transparent);
 }
 
 body {
@@ -17,7 +17,7 @@ header a {
   color: inherit;
 }
 
-.rejilla {
+.grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
@@ -25,20 +25,20 @@ header a {
   list-style: none;
 }
 
-.personaje {
+.character {
   padding: 0.9rem 1rem;
-  border: 1px solid var(--borde);
+  border: 1px solid var(--border);
   border-radius: 0.6rem;
 }
 
-.personaje h2 {
+.character h2 {
   margin: 0 0 0.2rem;
   font-size: 1.05rem;
 }
 
 .alias,
 .kana {
-  color: var(--tenue);
+  color: var(--muted);
   font-size: 0.9rem;
 }
 
@@ -46,6 +46,6 @@ header a {
   margin-bottom: 0;
 }
 
-.relaciones {
+.relationships {
   padding-left: 1.2rem;
 }

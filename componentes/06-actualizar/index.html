@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>06 · Actualizar</title>
+    <link rel="stylesheet" href="/assets/estilos.css" />
+  </head>
+  <body>
+    <h1>06 · Actualizar</h1>
+    <p class="ayuda">
+      Añadir, editar y borrar. Y en vez de repintar la lista entera en cada
+      cambio, solo lo que ha cambiado: una tarjeta entra, una sale, una se
+      actualiza en su sitio.
+    </p>
+
+    <form id="search-form">
+      <label for="query">Buscar</label>
+      <input id="query" name="query" type="search" autocomplete="off" />
+    </form>
+
+    <p id="result-count" class="ayuda"></p>
+    <p class="ayuda">Favoritos: <span id="favorite-count">0</span></p>
+
+    <form id="add-form">
+      <label for="new-name">Añadir personaje</label>
+      <input id="new-name" name="name" type="text" autocomplete="off" />
+      <button type="submit">Añadir</button>
+      <button type="button" id="reset">Vaciar los añadidos</button>
+    </form>
+
+    <character-list id="characters"></character-list>
+
+    <template id="character-card-template">
+      <li class="character">
+        <h2 data-field="name"></h2>
+        <p class="family" data-field="family"></p>
+        <p class="description" data-field="description"></p>
+        <ul class="tags" data-field="tags"></ul>
+        <slot></slot>
+      </li>
+    </template>
+
+    <h2>TODOs</h2>
+    <ol>
+      <li class="tarea" id="todo-1">
+        <strong>store.js · <code>add</code></strong>
+        <span>
+          Crea un personaje nuevo, lo añade al final y devuelve su id. Sin
+          mutar el array: <code>[...this.#characters, nuevo]</code>.
+        </span>
+      </li>
+      <li class="tarea" id="todo-2">
+        <strong>store.js · <code>update</code></strong>
+        <span>
+          Devuelve un array nuevo con un personaje cambiado. Si el id no
+          existe, no toca nada.
+        </span>
+      </li>
+      <li class="tarea" id="todo-3">
+        <strong>store.js · <code>remove</code></strong>
+        <span>Filtra el id fuera y limpia el favorito si hacía falta.</span>
+      </li>
+      <li class="tarea" id="todo-4">
+        <strong>store_test.js</strong>
+        <span>
+          Hay ocho tests escritos para <code>add</code>, <code>update</code> y
+          <code>remove</code>. Pásalos.
+        </span>
+      </li>
+      <li class="tarea" id="todo-5">
+        <strong>character-list.js · <code>patch</code></strong>
+        <span>
+          Actualiza **una** tarjeta sin repintar la lista. Es el TODO que
+          justifica el bloque.
+        </span>
+      </li>
+    </ol>
+
+    <p class="ayuda">
+      Los cuatro primeros TODOs son de datos y tienen tests. El quinto es de
+      DOM y no: es el punto de todo el bloque.
+    </p>
+
+    <script type="module" src="/06-actualizar/app.js"></script>
+  </body>
+</html>

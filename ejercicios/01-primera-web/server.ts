@@ -87,7 +87,7 @@ export function filterCharacters(
 /**
  * TODO 2 · Construye el texto por el que se busca dentro de un personaje.
  *
- * Este texto acaba en el atributo `data-buscar` de cada tarjeta, y es lo que
+ * Este texto acaba en el atributo `data-search` de cada tarjeta, y es lo que
  * `app.js` lee en el navegador para filtrar en vivo. Piensa qué campos deben
  * ser buscables: quien escribe "kuroneko" debería encontrar a Ruri Gokou, y
  * quien escribe "idol" debería encontrar a Kanako.
@@ -109,11 +109,11 @@ export function searchText(character: Character): string {
  * @returns El HTML de las tarjetas, listo para meter dentro de un `<ul>`.
  *
  * Contrato exacto, en minúsculas y en este orden:
- *   - Un `<li class="personaje" data-buscar="...">` por personaje.
- *   - El `data-buscar` es el resultado de `searchText(character)`.
+ *   - Un `<li class="character" data-search="...">` por personaje.
+ *   - El `data-search` es el resultado de `searchText(character)`.
  *   - Dentro, un `<h2>` con `name` y, si hay alias, un `<p class="alias">` con
  *     el texto `"también conocida como Kuroneko"`.
- *   - Después, un `<ul class="etiquetas">` con un `<li>` por etiqueta.
+ *   - Después, un `<ul class="tags">` con un `<li>` por etiqueta.
  *   - Si la lista está vacía, devuelve `""` (nada de texto "no hay resultados").
  *
  * Pistas: `Array.prototype.map` y `Array.prototype.join`. El `map` te da un

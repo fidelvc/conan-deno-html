@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>02 · Clases</title>
+    <link rel="stylesheet" href="/assets/estilos.css" />
+  </head>
+  <body>
+    <h1>02 · Clases</h1>
+    <p class="ayuda">
+      El mismo comportamiento que el 01, con las tres variables sueltas metidas
+      en una clase. No hay nada nuevo en la página: por eso no debería notarse.
+    </p>
+
+    <form id="search-form">
+      <label for="query">Buscar</label>
+      <input id="query" name="query" type="search" autocomplete="off" />
+    </form>
+
+    <p id="result-count" class="ayuda"></p>
+
+    <ul id="characters" class="grid"></ul>
+
+    <h2>TODOs</h2>
+    <ol>
+      <li class="tarea" id="todo-1">
+        <strong>store.js · <code>CharacterStore.setQuery</code></strong>
+        <span>
+          Cambia la búsqueda, recalcula <code>visible</code> y avisa a quien
+          escuche.
+        </span>
+      </li>
+      <li class="tarea" id="todo-2">
+        <strong>store.js · <code>CharacterStore.subscribe</code></strong>
+        <span>
+          Registra un oyente y llámalo con el estado nuevo. Que devuelva una
+          función para darse de baja.
+        </span>
+      </li>
+    </ol>
+
+    <script type="module" src="/02-clases/app.js"></script>
+  </body>
+</html>

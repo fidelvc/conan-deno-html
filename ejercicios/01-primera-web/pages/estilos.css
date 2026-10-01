@@ -1,7 +1,7 @@
 :root {
   color-scheme: light dark;
-  --borde: color-mix(in oklab, currentColor 20%, transparent);
-  --tenue: color-mix(in oklab, currentColor 65%, transparent);
+  --border: color-mix(in oklab, currentColor 20%, transparent);
+  --muted: color-mix(in oklab, currentColor 65%, transparent);
 }
 
 body {
@@ -17,10 +17,10 @@ h1 {
 }
 
 .intro,
-.contador,
-.vacio,
+.counter,
+.empty-state,
 footer {
-  color: var(--tenue);
+  color: var(--muted);
 }
 
 form {
@@ -34,7 +34,7 @@ form {
 input[type="search"] {
   flex: 1 1 18rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--borde);
+  border: 1px solid var(--border);
   border-radius: 0.4rem;
   background: transparent;
   color: inherit;
@@ -43,7 +43,7 @@ input[type="search"] {
 
 button {
   padding: 0.5rem 1rem;
-  border: 1px solid var(--borde);
+  border: 1px solid var(--border);
   border-radius: 0.4rem;
   background: transparent;
   color: inherit;
@@ -51,7 +51,7 @@ button {
   cursor: pointer;
 }
 
-.rejilla {
+.grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
@@ -59,23 +59,23 @@ button {
   list-style: none;
 }
 
-.personaje {
+.character {
   padding: 0.9rem 1rem;
-  border: 1px solid var(--borde);
+  border: 1px solid var(--border);
   border-radius: 0.6rem;
 }
 
-.personaje h2 {
+.character h2 {
   margin: 0 0 0.15rem;
   font-size: 1.05rem;
 }
 
 .alias {
-  color: var(--tenue);
+  color: var(--muted);
   font-size: 0.85rem;
 }
 
-.etiquetas {
+.tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
@@ -84,12 +84,12 @@ button {
   list-style: none;
 }
 
-.etiquetas li {
+.tags li {
   padding: 0.1rem 0.5rem;
-  border: 1px solid var(--borde);
+  border: 1px solid var(--border);
   border-radius: 999px;
   font-size: 0.78rem;
-  color: var(--tenue);
+  color: var(--muted);
 }
 
 [hidden] {

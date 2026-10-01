@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>04 · Slots</title>
+    <link rel="stylesheet" href="/assets/estilos.css" />
+  </head>
+  <body>
+    <h1>04 · Slots</h1>
+    <p class="ayuda">
+      La tarjeta ya no pinta su contenido: lo recibe. Con
+      <code>&lt;slot&gt;</code>, quien usa el componente decide qué va dentro y
+      el componente solo decide dónde va.
+    </p>
+
+    <form id="search-form">
+      <label for="query">Buscar</label>
+      <input id="query" name="query" type="search" autocomplete="off" />
+    </form>
+
+    <p id="result-count" class="ayuda"></p>
+
+    <character-list id="characters"></character-list>
+
+    <template id="character-card-template">
+      <li class="character">
+        <h2 data-field="name"></h2>
+        <p class="family" data-field="family"></p>
+        <p class="description" data-field="description"></p>
+        <ul class="tags" data-field="tags"></ul>
+        <slot></slot>
+      </li>
+    </template>
+
+    <h2>TODOs</h2>
+    <ol>
+      <li class="tarea" id="todo-1">
+        <strong>character-list.js · <code>renderCard</code></strong>
+        <span>
+          Rellena el template con <code>textContent</code> y, en el
+          <code>&lt;slot&gt;</code>, mete el HTML que elijó quien usa el
+          componente.
+        </span>
+      </li>
+      <li class="tarea" id="todo-2">
+        <strong>character-list.js · <code>badgeFor</code></strong>
+        <span>
+          Devuelve el HTML del badge, o <code>""</code> si no hace falta. Un
+          componente que a veces no pone nada es un componente que sabe
+          cuándo callarse.
+        </span>
+      </li>
+    </ol>
+
+    <p class="ayuda">
+      Mira el <code>index.html</code>: el <code>&lt;slot&gt;</code> está
+      vacío en el template, y quien lo rellena es
+      <code>character-list.js</code>. Ese es el reparto: el componente dice
+      <em>dónde</em>, y el contenedor dice <em>qué</em>.
+    </p>
+
+    <script type="module" src="/04-slots/app.js"></script>
+  </body>
+</html>

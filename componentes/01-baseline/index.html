@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>01 · Baseline</title>
+    <link rel="stylesheet" href="/assets/estilos.css" />
+  </head>
+  <body>
+    <h1>01 · Baseline</h1>
+    <p class="ayuda">
+      La versión más simple que funciona: tres funciones y un
+      <code>addEventListener</code>. Lee el código antes de tocar nada, y fíjate
+      en qué se rompe cuando el formulario tenga dos campos.
+    </p>
+
+    <form id="search-form">
+      <label for="query">Buscar</label>
+      <input id="query" name="query" type="search" autocomplete="off" />
+    </form>
+
+    <p id="result-count" class="ayuda"></p>
+
+    <ul id="characters" class="grid"></ul>
+
+    <h2>TODOs</h2>
+    <ol>
+      <li class="tarea" id="todo-1">
+        <strong>app.js · <code>matchesQuery</code></strong>
+        <span>
+          Normaliza el texto y decide si el personaje casa con la búsqueda.
+        </span>
+      </li>
+      <li class="tarea" id="todo-2">
+        <strong>app.js · <code>describeCount</code></strong>
+        <span>Un texto que cambia con el número de resultados.</span>
+      </li>
+    </ol>
+
+    <p class="ayuda">
+      En este bloque el estado son tres variables sueltas:
+      <code>characters</code>, <code>query</code> y <code>visible</code>. En el
+      02 es justo eso lo que se rompe.
+    </p>
+
+    <script type="module" src="/01-baseline/app.js"></script>
+  </body>
+</html>

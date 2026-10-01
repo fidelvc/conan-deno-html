@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>07 · Shadow DOM</title>
+    <link rel="stylesheet" href="/assets/estilos.css" />
+    <link rel="stylesheet" href="/07-shadow-dom/estilos-globales.css" />
+  </head>
+  <body>
+    <h1>07 · Shadow DOM</h1>
+    <p class="ayuda">
+      La tarjeta se encapsula: lleva su propio shadow root y sus propios estilos.
+      Y los estilos de la página dejan de poder romperla, igual que los suyos
+      dejan de poder romper la página.
+    </p>
+
+    <p class="aviso">
+      Prueba a quitar el <code>.character</code> de
+      <code>estilos-globales.css</code> y a poner
+      <code>color: red</code> en <code>assets/estilos.css</code>. La página
+      cambia; las tarjetas no.
+    </p>
+
+    <form id="search-form">
+      <label for="query">Buscar</label>
+      <input id="query" name="query" type="search" autocomplete="off" />
+    </form>
+
+    <p id="result-count" class="ayuda"></p>
+    <p class="ayuda">Favoritos: <span id="favorite-count">0</span></p>
+
+    <form id="add-form">
+      <label for="new-name">Añadir personaje</label>
+      <input id="new-name" name="name" type="text" autocomplete="off" />
+      <button type="submit">Añadir</button>
+      <button type="button" id="reset">Vaciar los añadidos</button>
+    </form>
+
+    <character-list id="characters"></character-list>
+
+    <h2>TODOs</h2>
+    <ol>
+      <li class="tarea" id="todo-1">
+        <strong>character-card.js · <code>constructor</code></strong>
+        <span>
+          <code>attachShadow({ mode: "open" })</code> y meter dentro el
+          template y un <code>&lt;style&gt;</code> con los estilos de la
+          tarjeta.
+        </span>
+      </li>
+      <li class="tarea" id="todo-2">
+        <strong>character-card.js · <code>character</code></strong>
+        <span>
+          Ahora el template se clona en <code>this.shadowRoot</code>, y el
+          selector del badge cambia: <code>this.querySelector</code> ya no
+          encuentra lo que está dentro del shadow root.
+        </span>
+      </li>
+      <li class="tarea" id="todo-3">
+        <strong>character-list.js · <code>shadowRoot</code></strong>
+        <span>
+          El mismo.attach para la lista, con su propio estilo. Fíjate en que
+          el <code>&lt;slot&gt;</code> de la lista tiene que seguir recibiendo
+          las tarjetas.
+        </span>
+      </li>
+    </ol>
+
+    <p class="ayuda">
+      Lo que sigue <strong>fuera</strong> del shadow root aunque lo metas
+      dentro: el contenido del <code>&lt;slot&gt;</code>. Eso es el punto del
+      bloque, y está en el README.
+    </p>
+
+    <script type="module" src="/07-shadow-dom/app.js"></script>
+  </body>
+</html>
